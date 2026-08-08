@@ -10,17 +10,35 @@
 <meta name="theme-color" content="#1b1e24">
 <style>
 :root{color-scheme:dark;
---bg:#14161a;--panel:#1b1e24;--card:#1c2027;--border:#2a2f38;--ink:#dde;--mut:#9ab;--faint:#789;
---field:#12151a;--accent:#5a7db0;--accent2:#38507a;--gold:gold;--link:#8bf;--danger:#f77;--warn:#fb4}
-:root[data-theme=light]{color-scheme:light;
---bg:#f2f3f5;--panel:#fff;--card:#fff;--border:#d5d9e0;--ink:#1d2430;--mut:#5a6675;--faint:#8894a3;
---field:#fafbfc;--accent:#3b6bb0;--accent2:#9db8dd;--gold:#c90;--link:#2a5db0;--danger:#c33;--warn:#a60}
+--bg:#0e1018;--panel:#151826;--card:#1a1e30;--surface2:#222740;--border:#2c3350;--ink:#e8eaf2;--mut:#9aa3c0;--faint:#6b7390;
+--field:#151826;--accent:#7c6cff;--accent2:#2b2a4a;--gold:#fbbf24;--link:#22d3ee;--danger:#fb7185;--warn:#fbbf24;--good:#34d399}
 body{font:14px/1.4 system-ui;margin:0;background:var(--bg);color:var(--ink)}
-header{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--panel);flex-wrap:wrap;position:sticky;top:0;z-index:3}
-header h1{font-size:16px;margin:0 8px 0 0}
-nav{display:flex;gap:4px;flex-wrap:wrap}
-nav button.active{background:var(--accent2);border-color:var(--accent)}
+#shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+#side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--panel);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:4px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 8px 16px}
+.brand-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--link));display:grid;place-items:center;flex:none}
+.brand-name{font-weight:800;font-size:1.05rem;letter-spacing:-0.01em}
+.brand-sub{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.nav-link{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;color:var(--mut);background:none;border:1px solid transparent;text-align:left;width:100%;font:inherit;cursor:pointer}
+.nav-link:hover{background:var(--card);color:var(--ink)}
+.nav-link.active{background:var(--surface2);color:var(--ink);border-color:var(--border)}
+.nav-link .ico{width:20px;text-align:center;flex:none}
+.nav-link.cta{color:var(--accent);font-weight:600}
+.nav-spacer{flex:1}
+.topbar{position:sticky;top:0;z-index:3;display:flex;gap:6px;align-items:center;padding:8px 12px;flex-wrap:wrap;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.hamburger{display:none;font-size:16px}
+#backdrop{position:fixed;inset:0;background:#0009;z-index:19;border:0;padding:0}
 #bar{display:flex;gap:6px;padding:8px 12px;flex-wrap:wrap;align-items:center}
+@media (max-width:900px){
+  #shell{grid-template-columns:1fr}
+  #side{position:fixed;left:0;top:0;bottom:0;width:252px;height:auto;transform:translateX(-105%);transition:transform .2s;z-index:20;box-shadow:0 10px 40px #0008}
+  #side.open{transform:none}
+  .hamburger{display:inline-flex}
+}
+.themegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.themechip{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font:inherit}
+.themechip.active{outline:2px solid var(--accent)}
+.themechip .sw{width:20px;height:20px;border-radius:50%;flex:none;border:1px solid #0004}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:0 12px 40px}
 #grid.free{display:block}
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer}
@@ -92,7 +110,7 @@ a{color:var(--link)}
 .scanopts label{color:var(--mut);text-align:right}
 progress{width:100%}
 table.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;color:var(--mut);font-weight:500;font-size:12px;padding:6px;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;position:sticky;top:52px;background:var(--bg)}
+.tbl th{text-align:left;color:var(--mut);font-weight:500;font-size:12px;padding:6px;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;position:sticky;top:46px;background:var(--bg)}
 .tbl td{padding:5px 6px;border-bottom:1px solid var(--border)}
 .tbl tbody tr{cursor:pointer}
 .tbl tbody tr:hover{background:var(--panel)}
@@ -106,25 +124,49 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
   .scanopts{grid-template-columns:max-content 1fr}
   #grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 }
-@media print{header,#bar,.star,.mini-act,#toastBox{display:none!important}body{background:#fff;color:#000}.card{border:1px solid #ccc;break-inside:avoid}#grid{display:block}.card>img{height:auto;max-height:200px}}
+@media print{#side,.topbar,#bar,.star,.mini-act,#toastBox{display:none!important}#shell{grid-template-columns:1fr}body{background:#fff;color:#000}.card{border:1px solid #ccc;break-inside:avoid}#grid{display:block}.card>img{height:auto;max-height:200px}}
 </style>
 <body>
-<header>
-  <h1>⚔️ MicroMiniger</h1>
+<div id="shell">
+<button id="backdrop" data-act="menu" aria-label="Close menu" hidden></button>
+<aside id="side">
+  <div class="brand">
+    <div class="brand-logo">
+      <!-- matches icon.svg: the gold mini on its display base -->
+      <svg width="22" height="22" viewBox="0 0 512 512" fill="#fff" aria-hidden="true">
+        <rect x="96" y="356" width="320" height="60" rx="14" opacity=".85"/>
+        <rect x="176" y="316" width="160" height="44" rx="10" opacity=".6"/>
+        <path d="M256 96l52 96-16 124h-72l-16-124z"/>
+        <circle cx="256" cy="96" r="34"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">MicroMiniger</div>
+      <div class="brand-sub">Mini collection</div>
+    </div>
+  </div>
   <nav id="tabs"></nav>
-  <span class="spacer"></span>
-  <span id="status"></span>
-  <button data-act="help" title="Keyboard shortcuts (?)">?</button>
-  <button data-act="theme" title="Toggle light/dark">🌓</button>
-  <button data-act="currency" title="Currency symbol">⚙</button>
-  <button data-act="syncdlg" title="Cloud backup">☁</button>
-  <button data-act="export">Backup</button>
-  <button data-act="importbtn">Restore</button>
-  <input type="file" id="importFile" accept=".json" hidden>
-  <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
-</header>
-<div id="bar"></div>
-<div id="grid"></div>
+  <div class="nav-spacer"></div>
+  <button class="nav-link cta" data-act="newmini"><span class="ico">＋</span>New Mini</button>
+</aside>
+<div id="main">
+  <div class="topbar">
+    <button class="hamburger" data-act="menu" aria-label="Menu">☰</button>
+    <span id="status"></span>
+    <span class="spacer"></span>
+    <button data-act="help" title="Keyboard shortcuts (?)">?</button>
+    <button data-act="themes" title="Theme">🎨</button>
+    <button data-act="currency" title="Currency symbol">⚙</button>
+    <button data-act="syncdlg" title="Cloud backup">☁</button>
+    <button data-act="export">Backup</button>
+    <button data-act="importbtn">Restore</button>
+    <input type="file" id="importFile" accept=".json" hidden>
+    <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+  </div>
+  <div id="bar"></div>
+  <div id="grid"></div>
+</div>
+</div>
 <datalist id="games"></datalist>
 <datalist id="factions"></datalist>
 <datalist id="scales"><option>28mm</option><option>32mm</option><option>15mm</option><option>54mm</option><option>75mm</option><option>1:72</option></datalist>
@@ -147,6 +189,7 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
 </dialog>
 <dialog id="scanDlg"></dialog>
 <dialog id="syncDlg"></dialog>
+<dialog id="themeDlg"></dialog>
 <dialog id="help">
   <h3 style="margin-top:0">Keyboard &amp; tips</h3>
   <p><kbd>/</kbd> search · <kbd>n</kbd> new · <kbd>g</kbd> grid/table · <kbd>?</kbd> this help · <kbd>Esc</kbd> close · <kbd>←</kbd><kbd>→</kbd> step photos in the viewer</p>
@@ -193,7 +236,52 @@ function dataURLtoBlob(u) {
 // settings
 let CUR = localStorage.getItem('mm-cur') || '$';
 const money = v => (v == null || v === '') ? '' : CUR + v;
-document.documentElement.dataset.theme = localStorage.getItem('mm-theme') || 'dark';
+
+// ---------- themes (same shape as SpeechImprover's picker; Basecoat is ours) ----------
+// v: [bg, panel, card, surface2, border, ink, mut, accent, link, good, warn, bad]
+const THEMES = {
+  aurora:    {label:'Aurora',           sw:['#6d5efc','#22d3ee'], v:['#0e1018','#151826','#1a1e30','#222740','#2c3350','#e8eaf2','#9aa3c0','#7c6cff','#22d3ee','#34d399','#fbbf24','#fb7185']},
+  midnight:  {label:'Midnight Ink',     sw:['#3b82f6','#0ea5e9'], v:['#0b0f1a','#101626','#141b2e','#1c2740','#243150','#e6edf7','#8ca0c0','#3b82f6','#0ea5e9','#22c55e','#f59e0b','#ef4444']},
+  basecoat:  {label:'Basecoat',         sw:['#c9a227','#9aae54'], v:['#12140c','#181b10','#1e2214','#272c1a','#3a4126','#ecead8','#a8ab8a','#c9a227','#9aae54','#8ab84a','#d9a62e','#d95f4a']},
+  ember:     {label:'Ember',            sw:['#fb7185','#f59e0b'], v:['#160f12','#1f1418','#241519','#311b21','#43262e','#f6e9ea','#c79ba0','#fb7185','#f59e0b','#4ade80','#fbbf24','#f87171']},
+  forest:    {label:'Deep Forest',      sw:['#34d399','#a3e635'], v:['#0c130f','#101a14','#13201a','#1a2c22','#244234','#e8f3ec','#93b3a2','#34d399','#a3e635','#4ade80','#facc15','#fb7185']},
+  nord:      {label:'Nord',             sw:['#88c0d0','#5e81ac'], v:['#242933','#2e3440','#333b4c','#3b4252','#434c5e','#eceff4','#9aa6bd','#88c0d0','#5e81ac','#a3be8c','#ebcb8b','#bf616a']},
+  dracula:   {label:'Dracula',          sw:['#bd93f9','#ff79c6'], v:['#1e1f29','#282a36','#2d2f3d','#383a4a','#44475a','#f8f8f2','#a6accd','#bd93f9','#ff79c6','#50fa7b','#f1fa8c','#ff5555']},
+  synthwave: {label:'Synthwave',        sw:['#ff2e97','#03dac6'], v:['#160e2e','#1d1340','#241a4d','#2f2363','#3c2c7a','#f5e9ff','#b29bd8','#ff2e97','#22d3ee','#36f9b3','#ffcc66','#ff5c7c']},
+  rosepine:  {label:'Rosé Pine',        sw:['#ebbcba','#c4a7e7'], v:['#191724','#1f1d2e','#26233a','#2f2b45','#3a3553','#e0def4','#a6a0c4','#ebbcba','#c4a7e7','#9ccfd8','#f6c177','#eb6f92']},
+  gruvbox:   {label:'Gruvbox',          sw:['#fabd2f','#fe8019'], v:['#1d2021','#282828','#32302f','#3c3836','#504945','#ebdbb2','#a89984','#fabd2f','#fe8019','#b8bb26','#fabd2f','#fb4934']},
+  paper:     {label:'Paper (light)',    sw:['#2e6db4','#c0612f'], light:1, v:['#f3efe7','#ece6da','#fffdf9','#f6f1e8','#dcd4c4','#1f2937','#6b7280','#2e6db4','#c0612f','#15803d','#b45309','#b91c1c']},
+  mono:      {label:'Mono Slate (light)',sw:['#111827','#6366f1'], light:1, v:['#eef1f5','#e3e8ef','#ffffff','#f1f4f9','#d3dae4','#0f172a','#64748b','#4f46e5','#0ea5e9','#059669','#d97706','#dc2626']},
+};
+let curTheme = localStorage.getItem('mm-theme') || 'aurora';
+if (curTheme === 'dark') curTheme = 'midnight';   // migrate the old two-theme setting
+if (curTheme === 'light') curTheme = 'paper';
+function applyTheme(key) {
+  const t = THEMES[key] || THEMES.aurora;
+  const [bg, panel, card, s2, border, ink, mut, accent, link, good, warn, bad] = t.v;
+  const r = document.documentElement.style, S = (k, val) => r.setProperty(k, val);
+  S('--bg', bg); S('--panel', panel); S('--card', card); S('--surface2', s2); S('--border', border);
+  S('--ink', ink); S('--mut', mut);
+  S('--faint', `color-mix(in srgb, ${mut} 65%, ${bg})`);
+  S('--field', t.light ? s2 : panel);
+  S('--accent', accent);
+  S('--accent2', `color-mix(in srgb, ${accent} 28%, ${panel})`);
+  S('--link', link); S('--gold', warn); S('--danger', bad); S('--warn', warn); S('--good', good);
+  r.colorScheme = t.light ? 'light' : 'dark';
+  document.querySelector('meta[name=theme-color]').content = panel;
+  localStorage.setItem('mm-theme', key);
+  curTheme = key;
+}
+applyTheme(curTheme);
+function renderThemes() {
+  $('#themeDlg').innerHTML = `<h3 style="margin-top:0">🎨 Theme</h3>
+    <div class=themegrid>${Object.entries(THEMES).map(([k, t]) => `
+      <button class="themechip ${k === curTheme ? 'active' : ''}" data-act="settheme:${k}">
+        <span class=sw style="background:linear-gradient(135deg,${t.sw[0]} 50%,${t.sw[1]} 50%)"></span>${t.label}</button>`).join('')}
+    </div>
+    <footer><button data-act=themeclose>Close</button></footer>`;
+  if (!$('#themeDlg').open) $('#themeDlg').showModal();
+}
 
 // time helpers
 const parseMins = s => { if (!s) return 0; const h = +(String(s).match(/(\d+(?:\.\d+)?)\s*h/i)?.[1] || 0), m = +(String(s).match(/(\d+)\s*m/i)?.[1] || 0); return (h * 60 + m) || (+s ? +s * 60 : 0); };
@@ -308,6 +396,7 @@ const STAGES = ['Unassembled','Assembled','Primed','Base coat','Painting','Paint
 const PAINTED = ['Painted','Varnished','Based'];
 const GONE = ['lost','sold','gifted away'];
 const TABS = {dash:'Dashboard', minis:'Minis', queue:'Paint Queue', gallery:'Gallery', groups:'Sets & Armies', battles:'Battle Log', kits:'Kits', supplies:'Paints & Tools', models:'3D Models', shows:'Slideshows'};
+const ICONS = {dash:'◎', minis:'🎨', queue:'🖌️', gallery:'🖼️', groups:'⚔️', battles:'🏆', kits:'📦', supplies:'🧪', models:'🧊', shows:'🎬'};
 const LABEL = {minis:'Mini', groups:'Set/Army', battles:'Battle', kits:'Kit', supplies:'Supply', models:'3D Model', shows:'Slideshow'};
 
 const FIELDS = {
@@ -845,7 +934,7 @@ const setView = v => { flt.view = v; localStorage.setItem('mm-view', v); renderB
 // ---------- dashboard ----------
 function bar(label, val, max, fmt = v => v, act = '') {
   const pct = max && val ? Math.max(2, Math.round(val / max * 100)) : 0;
-  return `<div class=brow ${act ? `data-act="${act}"` : ''} title="${esc(label)}: ${esc(fmt(val))}"><span class=blbl>${esc(label)}</span><div class=btrack><div class=bfill style="width:${pct}%"></div></div><span>${esc(fmt(val))}</span></div>`;
+  return `<div class=brow ${act ? `data-act="${act}"` : ''} title="${esc(label)}: ${esc(fmt(val))}"><span class=blbl>${esc(label)}</span><div class=btrack>${pct ? `<div class=bfill style="width:${pct}%"></div>` : ''}</div><span>${esc(fmt(val))}</span></div>`;
 }
 const tile = (num, lbl, act = '', cls = '') => `<div class="tile ${cls}" ${act ? `data-act="${act}"` : ''}><div class=tnum>${num}</div><div class=tlbl>${lbl}</div></div>`;
 function dashHTML() {
@@ -921,7 +1010,14 @@ function dashHTML() {
 function render() { renderTabs(); renderBar(); renderGrid(); renderDatalists(); }
 function renderTabs() {
   $('#tabs').innerHTML = Object.entries(TABS)
-    .map(([k, l]) => `<button data-act="tab:${k}" class="${k === tab ? 'active' : ''}">${l}</button>`).join('');
+    .map(([k, l]) => `<button class="nav-link ${k === tab ? 'active' : ''}" data-act="tab:${k}" ${k === tab ? 'aria-current=page' : ''}>
+      <span class=ico>${ICONS[k]}</span>${l}</button>`).join('');
+}
+const sideOpen = () => $('#side').classList.contains('open');
+function toggleSide(force) {
+  const open = force ?? !sideOpen();
+  $('#side').classList.toggle('open', open);
+  $('#backdrop').hidden = !open;
 }
 function renderDatalists() {
   const uniq = key => [...new Set([...S.minis, ...S.kits, ...S.groups].map(x => x[key]).filter(Boolean))];
@@ -1326,7 +1422,9 @@ document.addEventListener('click', async e => {
   const rest = args.join(':');
   const m = editing?.obj;
   switch (act) {
-    case 'tab': tab = args[0]; flt = {view: flt.view}; selMode = false; selSet.clear(); render(); break;
+    case 'tab': tab = args[0]; flt = {view: flt.view}; selMode = false; selSet.clear(); toggleSide(false); render(); break;
+    case 'menu': toggleSide(); break;
+    case 'newmini': toggleSide(false); if (tab !== 'minis') { tab = 'minis'; flt = {view: flt.view}; render(); } openEditor('minis', {}); break;
     case 'new': openEditor(tab, {}); break;
     case 'edit': {
       if (selMode && args[0] === 'minis') {
@@ -1372,10 +1470,9 @@ document.addEventListener('click', async e => {
     case 'scanstl': downloadBlob(new Blob([R3.meshToSTL(scanMesh)]), safeName(scanMini.name) + '-scan.stl'); break;
     case 'scanply': downloadBlob(new Blob([R3.meshToPLY(scanMesh)]), safeName(scanMini.name) + '-scan.ply'); break;
     case 'scanclose': $('#scanDlg').close(); break;
-    case 'theme': {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next; localStorage.setItem('mm-theme', next); break;
-    }
+    case 'themes': renderThemes(); break;
+    case 'settheme': applyTheme(args[0]); renderThemes(); break;
+    case 'themeclose': $('#themeDlg').close(); break;
     case 'currency': {
       const c = prompt('Currency symbol:', CUR);
       if (c != null) { CUR = c; localStorage.setItem('mm-cur', c); render(); } break;
@@ -1658,6 +1755,7 @@ document.addEventListener('keydown', async e => {
     return;
   }
   if (e.key === 'Enter' && e.target.classList?.contains('card')) { e.target.click(); return; }
+  if (e.key === 'Escape' && sideOpen()) { toggleSide(false); return; }
   if (dlg.open || $('#scanDlg').open || $('#glDlg').open || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
   if (e.key === '/') { e.preventDefault(); $('#q')?.focus(); }
   else if (e.key === 'n' && LABEL[tab]) openEditor(tab, {});
