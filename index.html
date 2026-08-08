@@ -1,0 +1,1715 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.googleusercontent.com; connect-src 'self' https://www.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src https://accounts.google.com; manifest-src 'self'; worker-src 'self'; media-src blob:; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>MicroMiniger</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1b1e24">
+<style>
+:root{color-scheme:dark;
+--bg:#14161a;--panel:#1b1e24;--card:#1c2027;--border:#2a2f38;--ink:#dde;--mut:#9ab;--faint:#789;
+--field:#12151a;--accent:#5a7db0;--accent2:#38507a;--gold:gold;--link:#8bf;--danger:#f77;--warn:#fb4}
+:root[data-theme=light]{color-scheme:light;
+--bg:#f2f3f5;--panel:#fff;--card:#fff;--border:#d5d9e0;--ink:#1d2430;--mut:#5a6675;--faint:#8894a3;
+--field:#fafbfc;--accent:#3b6bb0;--accent2:#9db8dd;--gold:#c90;--link:#2a5db0;--danger:#c33;--warn:#a60}
+body{font:14px/1.4 system-ui;margin:0;background:var(--bg);color:var(--ink)}
+header{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--panel);flex-wrap:wrap;position:sticky;top:0;z-index:3}
+header h1{font-size:16px;margin:0 8px 0 0}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button.active{background:var(--accent2);border-color:var(--accent)}
+#bar{display:flex;gap:6px;padding:8px 12px;flex-wrap:wrap;align-items:center}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;padding:0 12px 40px}
+#grid.free{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer}
+.card:focus-visible{outline:2px solid var(--accent)}
+.card.selected{outline:2px solid var(--accent)}
+.card>img{width:100%;height:150px;object-fit:cover;display:block;background:var(--field)}
+.noimg{width:100%;height:150px;font-size:40px;display:flex;align-items:center;justify-content:center;background:var(--field)}
+.cbody{padding:8px}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.sub{color:var(--mut);font-size:12px}
+.chip{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px}
+.tag{display:inline-block;background:var(--accent2);border-radius:10px;padding:0 8px;font-size:11px;margin:1px;cursor:pointer}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:10px;max-width:720px;width:92%;max-height:88vh;overflow:auto}
+::backdrop{background:#000a}
+.frm{display:grid;grid-template-columns:max-content 1fr;gap:6px 10px;align-items:center}
+.frm label{color:var(--mut);font-size:12px;text-align:right}
+input,select,textarea,button{background:var(--field);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font:inherit}
+textarea{min-height:50px;width:95%}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.danger{color:var(--danger)}
+.warn{color:var(--warn)}
+.star{background:none;border:0;font-size:18px;color:var(--gold);padding:0 4px}
+.mini-act{background:none;border:0;color:var(--mut);padding:0 3px;font-size:13px}
+footer{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+fieldset{border:1px solid var(--border);border-radius:8px;margin-top:12px}
+details.grp{border:1px solid var(--border);border-radius:8px;margin-top:8px;padding:4px 8px}
+details.grp>summary{cursor:pointer;color:var(--mut);font-size:12px;padding:4px;user-select:none}
+details.grp[open]>summary{border-bottom:1px solid var(--border);margin-bottom:8px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap}
+.thumbs figure{margin:0;text-align:center;font-size:10px}
+.thumbs img{width:90px;height:90px;object-fit:cover;border-radius:6px;cursor:zoom-in}
+.pname{display:block;color:var(--faint);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{color:var(--faint)}
+a{color:var(--link)}
+#player{text-align:center}
+#pimg{max-width:80vw;max-height:70vh;user-select:none;touch-action:none;cursor:grab}
+#pcap{margin:8px 0;color:var(--mut)}
+.spacer{flex:1}
+.postrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px}
+.tile[data-act]{cursor:pointer}
+.tnum{font-size:24px;font-weight:600}
+.tlbl{font-size:12px;color:var(--mut)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px}
+.panel h4{margin:0 0 8px;font-size:13px}
+.brow{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;margin:4px 0;font-size:12px}
+.brow[data-act]{cursor:pointer}
+.blbl{color:var(--mut);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btrack{background:var(--field);border-radius:4px;height:10px}
+.bfill{background:var(--accent);border-radius:4px;height:10px;min-width:2px}
+.recent{width:64px;height:64px;object-fit:cover;border-radius:6px;cursor:pointer;margin:2px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;padding-bottom:30px}
+.wimg{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;cursor:zoom-in;background:var(--field)}
+.board{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px}
+.col{min-width:170px;flex:0 0 170px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:8px}
+.col h4{margin:0 0 8px;font-size:12px;color:var(--mut)}
+.col.over{outline:2px dashed var(--accent)}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px;margin-bottom:6px;cursor:grab;font-size:12px}
+.qcard img{width:100%;height:70px;object-fit:cover;border-radius:4px;display:block;margin-bottom:4px}
+#toastBox{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--border);padding:10px 14px;border-radius:8px;display:flex;gap:10px;align-items:center;z-index:9}
+#toastBox[hidden]{display:none}
+#gl,#maskPrev{background:#14161a;border-radius:8px;touch-action:none;max-width:100%}
+#gl{cursor:grab}
+#glDlg,#scanDlg{max-width:760px}
+.scanopts{display:grid;grid-template-columns:max-content 1fr max-content 1fr;gap:6px 8px;align-items:center;font-size:12px}
+.scanopts label{color:var(--mut);text-align:right}
+progress{width:100%}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;color:var(--mut);font-weight:500;font-size:12px;padding:6px;border-bottom:1px solid var(--border);cursor:pointer;white-space:nowrap;position:sticky;top:52px;background:var(--bg)}
+.tbl td{padding:5px 6px;border-bottom:1px solid var(--border)}
+.tbl tbody tr{cursor:pointer}
+.tbl tbody tr:hover{background:var(--panel)}
+.tth{width:34px;height:34px;object-fit:cover;border-radius:4px;display:block}
+kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:11px}
+#status{font-size:11px;color:var(--faint)}
+.timer{color:var(--warn)}
+@media (max-width:640px){
+  .frm{grid-template-columns:1fr;gap:2px}
+  .frm label{text-align:left;margin-top:6px}
+  .scanopts{grid-template-columns:max-content 1fr}
+  #grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
+@media print{header,#bar,.star,.mini-act,#toastBox{display:none!important}body{background:#fff;color:#000}.card{border:1px solid #ccc;break-inside:avoid}#grid{display:block}.card>img{height:auto;max-height:200px}}
+</style>
+<body>
+<header>
+  <h1>⚔️ MicroMiniger</h1>
+  <nav id="tabs"></nav>
+  <span class="spacer"></span>
+  <span id="status"></span>
+  <button data-act="help" title="Keyboard shortcuts (?)">?</button>
+  <button data-act="theme" title="Toggle light/dark">🌓</button>
+  <button data-act="currency" title="Currency symbol">⚙</button>
+  <button data-act="syncdlg" title="Cloud backup">☁</button>
+  <button data-act="export">Backup</button>
+  <button data-act="importbtn">Restore</button>
+  <input type="file" id="importFile" accept=".json" hidden>
+  <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
+</header>
+<div id="bar"></div>
+<div id="grid"></div>
+<datalist id="games"></datalist>
+<datalist id="factions"></datalist>
+<datalist id="scales"><option>28mm</option><option>32mm</option><option>15mm</option><option>54mm</option><option>75mm</option><option>1:72</option></datalist>
+<dialog id="dlg"></dialog>
+<dialog id="player">
+  <img id="pimg" alt="">
+  <div id="pcap"></div>
+  <footer><button data-act="pclose">Close</button><button data-act="protate">↻ Rotate 90°</button></footer>
+</dialog>
+<dialog id="glDlg">
+  <h3 id="glName" style="margin-top:0"></h3>
+  <canvas id="gl" width="680" height="520"></canvas>
+  <div class="sub">drag to rotate · shift-drag to pan · scroll to zoom · <span id="glInfo"></span></div>
+  <footer>
+    <button data-act="glclose">Close</button>
+    <button data-act="glflip">Flip up-axis</button>
+    <button data-act="glwebm">🎬 Orbit video</button>
+    <button data-act="glgif">Orbit GIF</button>
+  </footer>
+</dialog>
+<dialog id="scanDlg"></dialog>
+<dialog id="syncDlg"></dialog>
+<dialog id="help">
+  <h3 style="margin-top:0">Keyboard &amp; tips</h3>
+  <p><kbd>/</kbd> search · <kbd>n</kbd> new · <kbd>g</kbd> grid/table · <kbd>?</kbd> this help · <kbd>Esc</kbd> close · <kbd>←</kbd><kbd>→</kbd> step photos in the viewer</p>
+  <p class=sub>Search accepts field filters: <code>game:fantasy stage:primed tag:hero painter:me</code>, plus any free text.
+  Keys: name, game, faction, unit, tag, stage, status, painter, owner, scale, material, paint, kit, note.</p>
+  <p class=sub>Photos: drag files onto the photo box. Order them around the mini to get the 360° spin, GIF and photo scan.
+  Drag cards between columns in Paint Queue to change stage. Battle Log tracks games per army; Gallery is the photo wall.</p>
+  <p class=sub>MicroMiniger is a fan-made hobby tool. It is not affiliated with, sponsored, or endorsed by any game publisher or paint manufacturer; all trademarks belong to their respective owners. Your data stays in this browser unless you connect the optional ☁ cloud backup — either way, back it up!</p>
+  <footer><button data-act="helpclose">Close</button></footer>
+</dialog>
+<div id="toastBox" hidden><span id="toastMsg"></span><button data-act="undo">Undo</button></div>
+
+<script type="module">
+import * as R3 from './recon3d.js';
+import * as SY from './sync.js';
+const $ = s => document.querySelector(s);
+const esc = s => (s ?? '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const downloadBlob = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
+const loadImgs = urls => Promise.all(urls.map(u => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = u; })));
+const safeName = s => (s || 'export').replace(/\W+/g, '_');
+const today = () => new Date().toISOString().slice(0, 10);
+const num = v => Number.isFinite(+v) ? +v : 0;
+const stars = n => '★'.repeat(Math.max(0, Math.min(5, num(n))));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';    // no javascript:/data: from imported records
+const linkIf = (u, lbl) => safeUrl(u) ? `<a href="${esc(u)}" target=_blank rel="noopener noreferrer">${lbl}</a>` : '';
+// coerce imported records: a crafted backup must not smuggle strings into numeric template slots
+const SAN_NUM = ['id','qty','price','estValue','dispPrice','rOverall','rPaint','rAssembly','rVarnish','rSculpt','points','secs','timerStart','receiptId','dispReceiptId','fileId','groupId'];
+const SAN_ARR = ['photoIds','kitIds','paintIds','toolIds','modelIds','miniIds'];
+function sanitize(item) {
+  for (const k of SAN_NUM) if (item[k] != null && item[k] !== '') { const v = +item[k]; item[k] = Number.isFinite(v) ? v : null; }
+  for (const k of SAN_ARR) if (Array.isArray(item[k])) item[k] = item[k].map(Number).filter(Number.isFinite);
+  if (Array.isArray(item.posts)) item.posts = item.posts.filter(p => p && typeof p === 'object')
+    .map(p => ({url: String(p.url || ''), date: String(p.date || ''), note: String(p.note || '')}));
+  return item;
+}
+function dataURLtoBlob(u) {
+  const [meta, b64] = u.split(',');
+  const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream';
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type: mime});
+}
+
+// settings
+let CUR = localStorage.getItem('mm-cur') || '$';
+const money = v => (v == null || v === '') ? '' : CUR + v;
+document.documentElement.dataset.theme = localStorage.getItem('mm-theme') || 'dark';
+
+// time helpers
+const parseMins = s => { if (!s) return 0; const h = +(String(s).match(/(\d+(?:\.\d+)?)\s*h/i)?.[1] || 0), m = +(String(s).match(/(\d+)\s*m/i)?.[1] || 0); return (h * 60 + m) || (+s ? +s * 60 : 0); };
+const fmtMins = t => t >= 60 ? `${Math.floor(t / 60)}h ${t % 60 ? (t % 60) + 'm' : ''}`.trim() : t + 'm';
+const daysUntil = d => Math.ceil((new Date(d + 'T00:00') - new Date(today() + 'T00:00')) / 864e5);
+
+// receipt text parsing (paste or attached .txt) — image OCR would need a library
+function normDate(s) {
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);
+  if (!m) return '';
+  let [, a, b, y] = m; if (y.length === 2) y = '20' + y;
+  let d, mo; if (+a > 12) { d = a; mo = b; } else { mo = a; d = b; } // ponytail: ambiguous d/m vs m/d — assumes m/d unless impossible
+  return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+function parseReceiptText(t) {
+  const date = (t.match(/\b(\d{4}-\d{2}-\d{2})\b/) || t.match(/\b(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})\b/) || [])[1];
+  const totalLine = t.match(/total[^\d]*(\d+[.,]\d{2})/i);
+  const nums = [...t.matchAll(/(\d+[.,]\d{2})/g)].map(m => parseFloat(m[1].replace(',', '.')));
+  const total = totalLine ? parseFloat(totalLine[1].replace(',', '.')) : (nums.length ? Math.max(...nums) : null);
+  const vendor = t.split(/\r?\n/).map(s => s.trim()).find(s => s.length > 2 && !/receipt|invoice|^\d/i.test(s)) || '';
+  return {date: normDate(date), total, vendor};
+}
+
+// CSV (RFC4180-ish: quotes, doubled quotes, embedded newlines)
+function parseCSV(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else if (c !== '\r') cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+// ---------- DB ----------
+const STORES = ['minis','kits','groups','supplies','models','shows','battles','blobs'];
+const db = await new Promise((res, rej) => {
+  const r = indexedDB.open('microminiger', 3);
+  // guard: never re-create a store that exists, or older users lose their collection on upgrade
+  r.onupgradeneeded = () => {
+    STORES.forEach(s => {
+      if (!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s, {keyPath:'id', autoIncrement:true});
+    });
+    // kv: FileSystemHandles etc. — deliberately outside STORES so backups don't carry it
+    if (!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv');
+  };
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
+});
+SY.useKv({
+  get: k => rq(db.transaction('kv').objectStore('kv').get(k)),
+  set: (k, v) => rq(db.transaction('kv', 'readwrite').objectStore('kv').put(v, k)),
+});
+const rq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const put = (s, v) => rq(db.transaction(s, 'readwrite').objectStore(s).put(v));
+const del = (s, id) => rq(db.transaction(s, 'readwrite').objectStore(s).delete(id));
+const getAll = s => rq(db.transaction(s).objectStore(s).getAll());
+const getOne = (s, id) => rq(db.transaction(s).objectStore(s).get(id));
+
+const S = {};
+async function refresh() {
+  for (const s of STORES) if (s !== 'blobs') S[s] = await getAll(s); // ponytail: blobs fetched lazily, not held in RAM
+  render();
+  updateStatus();
+}
+const urlCache = new Map();
+async function blobURL(id, thumb = false) {
+  const key = (thumb ? 't' : 'b') + id;
+  if (!urlCache.has(key)) {
+    const b = await getOne('blobs', id);
+    urlCache.set(key, b ? URL.createObjectURL(thumb && b.thumb ? b.thumb : b.blob) : '');
+  }
+  return urlCache.get(key);
+}
+const dropURL = id => { for (const k of ['b' + id, 't' + id]) { const u = urlCache.get(k); if (u) URL.revokeObjectURL(u); urlCache.delete(k); } };
+// ponytail: images load as they scroll into view — a 2000-mini grid stays cheap
+const io = new IntersectionObserver(async entries => {
+  for (const e of entries) if (e.isIntersecting) { io.unobserve(e.target); e.target.src = await blobURL(+e.target.dataset.tid, true); }
+}, {rootMargin: '300px'});
+async function hydrate(root) {
+  for (const el of root.querySelectorAll('img[data-tid]')) io.observe(el);
+  for (const el of root.querySelectorAll('img[data-bid]')) el.src = await blobURL(+el.dataset.bid, true);
+  for (const el of root.querySelectorAll('a[data-dl]')) {
+    const b = await getOne('blobs', +el.dataset.dl);
+    if (b) { el.href = URL.createObjectURL(b.blob); el.download = b.name || 'file'; }
+  }
+  for (const el of root.querySelectorAll('[data-bname]')) el.textContent = (await getOne('blobs', +el.dataset.bname))?.name || '';
+}
+async function makeThumb(blob, max = 400) {
+  try {
+    const bmp = await createImageBitmap(blob);
+    const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(bmp.width * s)); c.height = Math.max(1, Math.round(bmp.height * s));
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close?.();
+    return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  } catch { return null; }                       // non-image (receipt PDF etc.) — no thumb
+}
+const putPhoto = async (file, name) => put('blobs', {name: name || file.name, blob: file, thumb: await makeThumb(file)});
+
+// ---------- schema ----------
+const STAGES = ['Unassembled','Assembled','Primed','Base coat','Painting','Painted','Varnished','Based'];
+const PAINTED = ['Painted','Varnished','Based'];
+const GONE = ['lost','sold','gifted away'];
+const TABS = {dash:'Dashboard', minis:'Minis', queue:'Paint Queue', gallery:'Gallery', groups:'Sets & Armies', battles:'Battle Log', kits:'Kits', supplies:'Paints & Tools', models:'3D Models', shows:'Slideshows'};
+const LABEL = {minis:'Mini', groups:'Set/Army', battles:'Battle', kits:'Kit', supplies:'Supply', models:'3D Model', shows:'Slideshow'};
+
+const FIELDS = {
+  minis: [
+    {k:'name', l:'Name', t:'text', g:'Identity'},
+    {k:'qty', l:'Quantity', t:'number', min:1, max:999, g:'Identity'},
+    {k:'game', l:'Game/System', t:'text', list:'games', g:'Identity'},
+    {k:'faction', l:'Faction', t:'text', list:'factions', g:'Identity'},
+    {k:'unit', l:'Unit/Type', t:'text', g:'Identity'},
+    {k:'scale', l:'Scale', t:'text', list:'scales', g:'Identity'},
+    {k:'material', l:'Material', t:'select', opts:['','plastic','resin','metal','3D-printed','mixed','other'], g:'Identity'},
+    {k:'baseSize', l:'Base size', t:'text', ph:'e.g. 32mm round', g:'Identity'},
+    {k:'tags', l:'Tags (comma-separated)', t:'text', g:'Identity'},
+    {k:'favorite', l:'Favorite ★', t:'check', g:'Identity'},
+    {k:'stage', l:'Progress', t:'select', opts:STAGES, g:'Progress'},
+    {k:'dueDate', l:'Deadline', t:'date', g:'Progress'},
+    {k:'paintedDate', l:'Finished on', t:'date', g:'Progress'},
+    {k:'timeToPaint', l:'Time to paint', t:'time', ph:'e.g. 6h 30m', g:'Progress'},
+    {k:'progressNotes', l:'Progress notes (primer, varnish coats…)', t:'textarea', g:'Progress'},
+    {k:'paintRecipe', l:'Paint recipe', t:'textarea', g:'Progress'},
+    {k:'damage', l:'Damage log', t:'textarea', g:'Progress'},
+    {k:'workLog', l:'Work log', t:'log', g:'Progress'},
+    {k:'kitIds', l:'Kit(s) used (multiple = kitbash)', t:'multi', src:'kits', g:'Build'},
+    {k:'kitbashNotes', l:'Kitbash notes', t:'text', g:'Build'},
+    {k:'extras', l:'Extra resources (magnets, greenstuff…)', t:'text', g:'Build'},
+    {k:'paintIds', l:'Paints used', t:'multi', src:() => S.supplies.filter(x => x.category === 'paint'), g:'Build'},
+    {k:'toolIds', l:'Brushes/tools used', t:'multi', src:() => S.supplies.filter(x => x.category !== 'paint'), g:'Build'},
+    {k:'modelIds', l:'Linked 3D models', t:'multi', src:'models', g:'Build'},
+    {k:'statsUrl', l:'Game stats link', t:'url', g:'Build'},
+    {k:'loreUrl', l:'Lore link', t:'url', g:'Build'},
+    {k:'acquired', l:'Acquired', t:'select', opts:['purchased','gifted'], g:'Provenance'},
+    {k:'price', l:'Purchase price', t:'number', g:'Provenance'},
+    {k:'priceScope', l:'Price covers', t:'select', opts:['','individual','whole kit'], g:'Provenance'},
+    {k:'acqDate', l:'Purchase/gift date', t:'date', g:'Provenance'},
+    {k:'acqLocation', l:'Purchase/gift location', t:'text', g:'Provenance'},
+    {k:'acqFrom', l:'Store / gifter', t:'text', g:'Provenance'},
+    {k:'receiptId', l:'Receipt', t:'file', g:'Provenance'},
+    {k:'estValue', l:'Estimated value', t:'number', g:'Provenance'},
+    {k:'painters', l:'Painter(s)', t:'text', g:'Provenance'},
+    {k:'owner', l:'Current owner', t:'text', g:'Provenance'},
+    {k:'formerOwners', l:'Former owner(s)', t:'text', g:'Provenance'},
+    {k:'disposition', l:'Status', t:'select', opts:['owned','wishlist','lost','sold','gifted away'], g:'Status & sale'},
+    {k:'dispDate', l:'Lost/sold/gifted date', t:'date', g:'Status & sale'},
+    {k:'dispLocation', l:'Lost/sold/gifted location', t:'text', g:'Status & sale'},
+    {k:'dispPrice', l:'Sale price', t:'number', g:'Status & sale'},
+    {k:'dispReceiptId', l:'Sale receipt', t:'file', g:'Status & sale'},
+    {k:'rOverall', l:'Rating overall (1–5)', t:'number', min:1, max:5, g:'Ratings'},
+    {k:'rPaint', l:'Rating: paint job', t:'number', min:1, max:5, g:'Ratings'},
+    {k:'rAssembly', l:'Rating: assembly', t:'number', min:1, max:5, g:'Ratings'},
+    {k:'rVarnish', l:'Rating: varnishing', t:'number', min:1, max:5, g:'Ratings'},
+    {k:'rSculpt', l:'Rating: sculpting', t:'number', min:1, max:5, g:'Ratings'},
+    {k:'notes', l:'Notes', t:'textarea', g:'Notes'},
+  ],
+  kits: [
+    {k:'name', l:'Name', t:'text'},
+    {k:'manufacturer', l:'Manufacturer', t:'text'},
+    {k:'game', l:'Game/System', t:'text', list:'games'},
+    {k:'price', l:'Price', t:'number'},
+    {k:'acqDate', l:'Purchase date', t:'date'},
+    {k:'acqLocation', l:'Purchase location', t:'text'},
+    {k:'receiptId', l:'Receipt', t:'file'},
+    {k:'contents', l:'Contents', t:'textarea'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+  groups: [
+    {k:'name', l:'Name', t:'text'},
+    {k:'type', l:'Type', t:'select', opts:['set','army','squad','display','other']},
+    {k:'game', l:'Game/System', t:'text', list:'games'},
+    {k:'points', l:'Points value', t:'number'},
+    {k:'dueDate', l:'Deadline (event, tournament…)', t:'date'},
+    {k:'miniIds', l:'Minis', t:'multi', src:'minis'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+  supplies: [
+    {k:'name', l:'Name', t:'text'},
+    {k:'category', l:'Category', t:'select', opts:['paint','brush','tool','material','other']},
+    {k:'brand', l:'Brand', t:'text'},
+    {k:'range', l:'Range/line', t:'text', ph:'e.g. base, layer, wash'},
+    {k:'color', l:'Color', t:'color'},
+    {k:'qty', l:'Quantity owned', t:'number', min:0, max:999},
+    {k:'status', l:'Condition', t:'select', opts:['ok','low','empty','worn','retired']},
+    {k:'price', l:'Price', t:'number'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+  models: [
+    {k:'name', l:'Name', t:'text'},
+    {k:'fileId', l:'Model file (STL / PLY / .splat)', t:'file'},
+    {k:'sourceUrl', l:'Source link', t:'url'},
+    {k:'designer', l:'Designer', t:'text'},
+    {k:'license', l:'License / terms', t:'text'},
+    {k:'printed', l:'Printed?', t:'select', opts:['','not printed','printed','failed','queued']},
+    {k:'miniIds', l:'Printed/physical minis', t:'multi', src:'minis'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+  battles: [
+    {k:'name', l:'Title', t:'text', ph:'e.g. league round 3'},
+    {k:'date', l:'Date', t:'date'},
+    {k:'game', l:'Game/System', t:'text', list:'games'},
+    {k:'groupId', l:'Army used', t:'ref', src:'groups'},
+    {k:'opponent', l:'Opponent', t:'text'},
+    {k:'oppArmy', l:'Opponent army', t:'text'},
+    {k:'result', l:'Result', t:'select', opts:['','win','loss','draw']},
+    {k:'points', l:'Points', t:'number'},
+    {k:'location', l:'Location / event', t:'text'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+  shows: [
+    {k:'name', l:'Name', t:'text'},
+    {k:'secs', l:'Seconds per slide', t:'number', min:1, max:60},
+    {k:'allPhotos', l:'Use every photo, not just the first', t:'check'},
+    {k:'miniIds', l:'Minis', t:'multi', src:'minis'},
+    {k:'notes', l:'Notes', t:'textarea'},
+  ],
+};
+const BLOBKEYS = {minis:['receiptId','dispReceiptId'], kits:['receiptId'], models:['fileId']};
+
+// ---------- GIF encoder (vanilla GIF89a + LZW) ----------
+const PALETTE = (() => { const p = []; for (let r = 0; r < 6; r++) for (let g = 0; g < 6; g++) for (let b = 0; b < 6; b++) p.push(r * 51, g * 51, b * 51); for (let i = 0; i < 40; i++) { const v = Math.round(i * 255 / 39); p.push(v, v, v); } return p; })();
+function toIdx(r, g, b) {
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  if (mx - mn < 12) return 216 + Math.round((r + g + b) / 3 / 255 * 39);
+  return Math.round(r / 51) * 36 + Math.round(g / 51) * 6 + Math.round(b / 51);
+}
+function lzw(minSize, pixels) {
+  const CLEAR = 1 << minSize, EOI = CLEAR + 1;
+  let nbits, maxcode, free, dict;
+  const bytes = []; let cur = 0, curBits = 0;
+  const out = code => {
+    cur |= code << curBits; curBits += nbits;
+    while (curBits >= 8) { bytes.push(cur & 255); cur >>= 8; curBits -= 8; }
+    if (free > maxcode && nbits < 12) { nbits++; maxcode = (1 << nbits) - 1; }
+  };
+  const reset = () => { dict = new Map(); free = EOI + 1; nbits = minSize + 1; maxcode = (1 << nbits) - 1; };
+  reset(); out(CLEAR);
+  let ent = pixels[0];
+  for (let i = 1; i < pixels.length; i++) {
+    const c = pixels[i], key = (ent << 8) | c;
+    if (dict.has(key)) { ent = dict.get(key); continue; }
+    out(ent);
+    if (free < 4096) dict.set(key, free++);
+    else { out(CLEAR); reset(); }
+    ent = c;
+  }
+  out(ent); out(EOI);
+  if (curBits > 0) bytes.push(cur & 255);
+  return bytes;
+}
+function makeGIF(frames, w, h, delayCs) {
+  const b = [];
+  const str = s => { for (const ch of s) b.push(ch.charCodeAt(0)); };
+  const u16 = v => { b.push(v & 255, (v >> 8) & 255); };
+  str('GIF89a'); u16(w); u16(h); b.push(0xF7, 0, 0);
+  b.push(...PALETTE);
+  str('!'); b.push(0xFF, 11); str('NETSCAPE2.0'); b.push(3, 1); u16(0); b.push(0);
+  for (const f of frames) {
+    b.push(0x21, 0xF9, 4, 0); u16(delayCs); b.push(0, 0);
+    b.push(0x2C); u16(0); u16(0); u16(w); u16(h); b.push(0);
+    b.push(8);
+    const data = lzw(8, f);
+    for (let i = 0; i < data.length; i += 255) { const s = data.slice(i, i + 255); b.push(s.length, ...s); }
+    b.push(0);
+  }
+  b.push(0x3B);
+  return new Blob([new Uint8Array(b)], {type:'image/gif'});
+}
+async function exportGIF(urls, delayCs, name) {
+  const W = 480, H = 360;
+  const imgs = await loadImgs(urls);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d', {willReadFrequently:true});
+  const frames = imgs.map(im => {
+    g.fillStyle = '#111'; g.fillRect(0, 0, W, H);
+    const sc = Math.min(W / im.width, H / im.height), w = im.width * sc, h = im.height * sc;
+    g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h);
+    const d = g.getImageData(0, 0, W, H).data, idx = new Uint8Array(W * H);
+    for (let i = 0; i < idx.length; i++) idx[i] = toIdx(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
+    return idx;
+  });
+  downloadBlob(makeGIF(frames, W, H, delayCs), safeName(name) + '.gif');
+}
+
+// ---------- 3D viewer: meshes (STL/PLY) and gaussian splats ----------
+let viewer = null, viewerKind = null;
+function ensureViewer(kind) {
+  if (viewerKind !== kind) {                       // fresh canvas = fresh GL context
+    const old = $('#gl'), fresh = old.cloneNode();
+    old.replaceWith(fresh);
+    viewer = kind === 'splat' ? new R3.SplatView(fresh) : new R3.MeshView(fresh);
+    viewerKind = kind;
+  }
+  return viewer;
+}
+function open3D(name, kind, payload) {
+  try {
+    $('#glName').textContent = name;
+    if (!$('#glDlg').open) $('#glDlg').showModal();
+    const v = ensureViewer(kind);
+    v.load(payload);
+    $('#glInfo').textContent = kind === 'splat'
+      ? `${payload.count.toLocaleString()} splats`
+      : `${(payload.idx.length / 3).toLocaleString()} triangles`;
+  } catch (e) { $('#glDlg').close(); alert('3D view failed: ' + e.message); }
+}
+async function viewModel(mod) {
+  const b = mod?.fileId && await getOne('blobs', mod.fileId);
+  if (!b) return alert('No model file attached.');
+  const nm = b.name || '', buf = await b.blob.arrayBuffer();
+  try {
+    if (/\.splat$/i.test(nm) || R3.isSplatPLY(buf)) return open3D(mod.name, 'splat', R3.parseSplatFile(buf, nm));
+    if (/\.stl$/i.test(nm)) return open3D(mod.name, 'mesh', R3.parseSTL(buf));
+    if (/\.ply$/i.test(nm)) return open3D(mod.name, 'mesh', R3.parsePLYMesh(buf));
+    alert('Viewable formats: .stl, .ply (mesh or splat), .splat');
+  } catch (e) { alert('Could not read that file: ' + e.message); }
+}
+async function orbitFrames(v, n = 48) {
+  const y0 = v.yaw, urls = [];
+  for (let i = 0; i < n; i++) { v.yaw = y0 + i * 2 * Math.PI / n; v.draw(); urls.push(v.canvas.toDataURL('image/jpeg', 0.85)); }
+  v.yaw = y0; v.draw();
+  return urls;
+}
+
+// ---------- photogrammetry: turntable photos -> mesh ----------
+// ponytail: silhouette space carving — offline, no GPU, no service. Concavities a
+// silhouette can't see (deep recesses) stay filled; use the splat pipeline for those.
+async function photoPixels(ids, maxDim) {
+  const bmps = [];
+  for (const id of ids) bmps.push(await createImageBitmap((await getOne('blobs', id)).blob));
+  const a = bmps[0].width / bmps[0].height;
+  const W = Math.round(a >= 1 ? maxDim : maxDim * a), H = Math.round(a >= 1 ? maxDim / a : maxDim);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d', {willReadFrequently: true});
+  const tiny = document.createElement('canvas'); tiny.width = tiny.height = 16;
+  const tg = tiny.getContext('2d', {willReadFrequently: true});
+  const out = [];
+  for (const bmp of bmps) {
+    tg.drawImage(bmp, 0, 0, 16, 16);                       // backdrop colour for padding
+    const t = tg.getImageData(0, 0, 16, 16).data, edge = [];
+    for (let i = 0; i < 16; i++) edge.push(i * 4, (15 * 16 + i) * 4, (i * 16) * 4, (i * 16 + 15) * 4);
+    const med = ch => { const v = edge.map(o => t[o + ch]).sort((p, q) => p - q); return v[v.length >> 1]; };
+    g.fillStyle = `rgb(${med(0)},${med(1)},${med(2)})`;
+    g.fillRect(0, 0, W, H);
+    const s = Math.min(W / bmp.width, H / bmp.height);
+    g.drawImage(bmp, (W - bmp.width * s) / 2, (H - bmp.height * s) / 2, bmp.width * s, bmp.height * s);
+    out.push({data: g.getImageData(0, 0, W, H).data, w: W, h: H});
+    bmp.close?.();
+  }
+  return out;
+}
+let scanMini = null, scanImgs = null, scanMesh = null;
+const scanOpt = () => ({
+  res: +$('#sRes').value, thresh: +$('#sThresh').value / 100, tol: +$('#sTol').value,
+  arc: +$('#sArc').value, elev: +$('#sElev').value, reverse: $('#sRev').checked,
+  heightMM: +$('#sHeight').value, smooth: +$('#sSmooth').value,
+});
+function scanHTML(m) {
+  const n = (m.photoIds || []).length;
+  return `<h3 style="margin-top:0">3D scan — ${esc(m.name)}</h3>
+  <div class=sub>${n} photos. Assumed evenly spaced around the mini, in list order.</div>
+  <div class=scanopts style="margin:10px 0">
+    <label>Detail</label><select id=sRes><option>64</option><option selected>96</option><option>128</option><option>160</option></select>
+    <label>Height (mm)</label><input id=sHeight type=number value=32 min=1 max=400>
+    <label>Background cut</label><input id=sThresh type=range min=4 max=60 value=16>
+    <label>Tolerance</label><input id=sTol type=number value=0 min=0 max=4 title="views allowed to disagree">
+    <label>Arc (°)</label><select id=sArc><option selected>360</option><option>180</option></select>
+    <label>Elevation (°)</label><input id=sElev type=number value=0 min=-60 max=60>
+    <label>Smoothing</label><input id=sSmooth type=number value=2 min=0 max=6>
+    <label>Reverse spin</label><input id=sRev type=checkbox>
+  </div>
+  <div class=sub>Silhouette preview — the mini should be solid, the backdrop black:</div>
+  <canvas id=maskPrev width=200 height=200></canvas>
+  <progress id=sProg value=0 hidden></progress>
+  <footer>
+    <button data-act=scanrun>Build 3D</button>
+    <button data-act=scansave id=sSave hidden>Save as 3D model</button>
+    <button data-act=scanstl id=sStl hidden>STL</button>
+    <button data-act=scanply id=sPly hidden>PLY</button>
+    <button data-act=scanclose>Close</button>
+  </footer>`;
+}
+function scanPreview() {
+  if (!scanImgs) return;
+  const im = scanImgs[0], o = scanOpt();
+  const mask = R3.silhouette(im.data, im.w, im.h, o);
+  const c = $('#maskPrev'), g = c.getContext('2d');
+  c.width = im.w; c.height = im.h;
+  const out = g.createImageData(im.w, im.h);
+  for (let i = 0; i < mask.length; i++) {
+    for (let ch = 0; ch < 3; ch++) out.data[i * 4 + ch] = mask[i] ? im.data[i * 4 + ch] * 0.4 + 153 : 0;
+    out.data[i * 4 + 3] = 255;
+  }
+  g.putImageData(out, 0, 0);
+}
+async function openScan(m) {
+  scanMini = m; scanMesh = null;
+  $('#scanDlg').innerHTML = scanHTML(m);
+  $('#scanDlg').showModal();
+  scanImgs = await photoPixels(m.photoIds, 220);
+  scanPreview();
+}
+async function scanRun() {
+  const o = scanOpt(), prog = $('#sProg');
+  prog.hidden = false; prog.value = 0;
+  try {
+    const res = await R3.reconstruct(scanImgs, o, async p => {
+      prog.value = p;
+      await new Promise(r => setTimeout(r));           // let the bar paint
+    });
+    scanMesh = res.mesh;
+    for (const id of ['sSave', 'sStl', 'sPly']) $('#' + id).hidden = false;
+    open3D(`${scanMini.name} — scan preview`, 'mesh', scanMesh);
+  } catch (e) { alert(e.message); }
+  prog.hidden = true;
+}
+async function scanSave() {
+  const buf = R3.meshToPLY(scanMesh);
+  const bid = await put('blobs', {name: `${safeName(scanMini.name)}-scan.ply`, blob: new Blob([buf])});
+  const mod = {name: `${scanMini.name} (photo scan)`, fileId: bid, miniIds: [scanMini.id], printed: 'not printed',
+    notes: `Silhouette scan from ${scanImgs.length} photos, ${scanOpt().res}³ voxels, ${scanMesh.idx.length / 3} triangles.`};
+  mod.id = await put('models', mod);
+  scanMini.modelIds = [...new Set([...(scanMini.modelIds || []), mod.id])];
+  await put('minis', scanMini);
+  await refresh();
+  alert('Saved under 3D Models and linked to this mini.');
+}
+async function exportCapture(m) {
+  const names = [], files = [];
+  let w = 0, h = 0, i = 0;
+  for (const id of (m.photoIds || [])) {
+    const b = await getOne('blobs', id);
+    const ext = (b.name || '').match(/\.\w+$/)?.[0] || '.jpg';
+    const name = `images/${String(i++).padStart(3, '0')}${ext}`;
+    names.push(name);
+    files.push({name, data: await b.blob.arrayBuffer()});
+    if (!w) { const bmp = await createImageBitmap(b.blob); w = bmp.width; h = bmp.height; bmp.close?.(); }
+  }
+  const o = $('#sArc') ? scanOpt() : {arc: 360, elev: 0, reverse: false};
+  files.push({name: 'transforms.json', data: R3.transformsJSON(names, {w, h, arc: o.arc, elev: o.elev, reverse: o.reverse})});
+  files.push({name: 'README.txt', data: R3.CAPTURE_README});
+  downloadBlob(R3.zipStore(files), safeName(m.name) + '-capture.zip');
+}
+
+// ---------- forms ----------
+function inputHTML(f, val, obj) {
+  let v = val; if (v == null) v = f.t === 'multi' ? [] : '';
+  switch (f.t) {
+    case 'textarea': return `<textarea name="${f.k}">${esc(v)}</textarea>`;
+    case 'log': return `<textarea name="${f.k}">${esc(v)}</textarea><button type=button data-act="logstamp:${f.k}">＋ dated entry</button>`;
+    case 'check': return `<input type=checkbox name="${f.k}" ${v ? 'checked' : ''}>`;
+    case 'select': return `<select name="${f.k}">${f.opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+    case 'time': {
+      const run = obj?.timerStart;
+      return `<input type=text name="${f.k}" value="${esc(v)}" placeholder="${f.ph}">
+        <button type=button data-act=timer class="${run ? 'timer' : ''}">${run ? '⏹ Stop timer' : '⏱ Start timer'}</button>
+        ${run ? `<span class=timer id=timerNow></span>` : ''}`;
+    }
+    case 'multi': {
+      const items = typeof f.src === 'function' ? f.src() : S[f.src];
+      return `<select multiple name="${f.k}" size=${Math.min(6, Math.max(2, items.length))}>${items.map(i => `<option value=${i.id} ${v.includes(i.id) ? 'selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`;
+    }
+    case 'ref': {
+      const items = S[f.src];
+      return `<select name="${f.k}"><option value="">—</option>${items.map(i => `<option value=${i.id} ${i.id === v ? 'selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`;
+    }
+    case 'file': return `${v ? `<a href="#" data-act="view:${v}">view current</a> ` : ''}<input type=file name="${f.k}">`;
+    default: return `<input type=${f.t} name="${f.k}" value="${esc(v)}" ${f.list ? `list=${f.list}` : ''} ${f.min != null ? `min=${f.min} max=${f.max}` : ''} ${f.ph ? `placeholder="${f.ph}"` : ''}>`;
+  }
+}
+async function readForm(form, fields, obj) {
+  for (const f of fields) {
+    const el = form.elements[f.k]; if (!el) continue;
+    if (f.t === 'check') obj[f.k] = el.checked;
+    else if (f.t === 'ref') obj[f.k] = el.value ? +el.value : null;
+    else if (f.t === 'multi') obj[f.k] = [...el.selectedOptions].map(o => +o.value);
+    else if (f.t === 'file') { const file = el.files[0]; if (file) obj[f.k] = await put('blobs', {name:file.name, blob:file, thumb: await makeThumb(file)}); }
+    else if (f.t === 'number') obj[f.k] = el.value === '' ? null : +el.value;
+    else obj[f.k] = el.value.trim();
+  }
+  return obj;
+}
+
+// ---------- editor ----------
+const dlg = $('#dlg');
+let editing = null;
+function photoSecHTML(m) {
+  if (!m.id) return `<p class=hint>Save first, then add photos.</p>`;
+  const ids = m.photoIds || [];
+  return `<fieldset id=photoSec><legend>Photos (${ids.length}) — order them around the mini for the 360° view; drop files here</legend>
+    <div class=thumbs>${ids.map((id, i) => `<figure><img data-bid=${id} data-act="light:${i}" title="Click to enlarge"><span class=pname data-bname=${id}></span><figcaption>
+      <button type=button data-act="pleft:${i}">◀</button>
+      <button type=button data-act="pright:${i}">▶</button>
+      <button type=button data-act="pname:${i}" title="Label angle (front, left…)">✎</button>
+      <button type=button data-act="pdel:${i}" class=danger>✕</button></figcaption></figure>`).join('')}</div>
+    <input type=file id=photoAdd multiple accept="image/*">
+    <button type=button data-act=cam>📷 Camera</button>
+    <input type=file id=photoCam accept="image/*" capture=environment hidden>
+    ${ids.length ? `<button type=button data-act=share>📣 Share card</button>` : ''}
+    ${ids.length > 1 ? `<button type=button data-act=spin>360° view</button>
+      <button type=button data-act=webm>Spin video</button>
+      <button type=button data-act=gif>Spin GIF</button>` : ''}
+  </fieldset>`;
+}
+function scanSecHTML(m) {
+  if (!m.id) return '';
+  const n = (m.photoIds || []).length;
+  const links = (m.modelIds || []).map(id => S.models.find(x => x.id === id)).filter(Boolean);
+  return `<fieldset><legend>3D scan</legend>
+    <div class=sub>${n} photo${n === 1 ? '' : 's'}. Silhouette scanning wants 16+ evenly spaced shots on a plain backdrop; a splat/NeRF pipeline wants 24-48 plus a raised ring.</div>
+    <button type=button data-act=scan ${n < 8 ? 'disabled' : ''}>🧊 Build 3D from photos</button>
+    <button type=button data-act=capzip ${n < 2 ? 'disabled' : ''}>⬇ Export capture set (NeRF/splat)</button>
+    ${links.length ? `<div class=sub>Models: ${links.map(md => `<a href="#" data-act="view3d:${md.id}">${esc(md.name)}</a>`).join(' · ')}</div>` : ''}
+  </fieldset>`;
+}
+const postLabel = u => { try { const h = new URL(u).hostname.replace('www.', ''); return h.includes('instagram') ? 'Instagram' : h; } catch { return u.slice(0, 30); } };
+function postsSecHTML(m) {
+  if (!m.id) return '';
+  const ps = m.posts || [];
+  return `<fieldset><legend>Posts &amp; exhibitions (${ps.length})</legend>
+    ${ps.map((p, i) => `<div class=postrow>📸 ${linkIf(p.url, esc(postLabel(p.url))) || esc(postLabel(p.url))}
+      <span class=sub>${esc(p.date || '')} ${esc(p.note || '')}</span>
+      <button type=button data-act="postdel:${i}" class=danger>✕</button></div>`).join('')}
+    <div class=postrow>
+      <input id=postUrl placeholder="https://instagram.com/p/…" style="min-width:200px">
+      <input id=postDate type=date>
+      <input id=postNote placeholder="note (exhibition, event…)">
+      <button type=button data-act=postadd>Add</button>
+    </div></fieldset>`;
+}
+function backlinksHTML(store, obj) {
+  if (!obj.id) return '';
+  let refs = [];
+  if (store === 'kits') refs = S.minis.filter(m => (m.kitIds || []).includes(obj.id));
+  else if (store === 'supplies') refs = S.minis.filter(m => [...(m.paintIds || []), ...(m.toolIds || [])].includes(obj.id));
+  else if (store === 'models') refs = S.minis.filter(m => (m.modelIds || []).includes(obj.id));
+  else if (store === 'minis') refs = S.groups.filter(g => (g.miniIds || []).includes(obj.id));
+  else return '';
+  if (!refs.length) return '';
+  const to = store === 'minis' ? 'groups' : 'minis';
+  return `<fieldset><legend>${store === 'minis' ? 'In sets/armies' : `Used by ${refs.length} mini(s)`}</legend>
+    ${refs.map(r => `<a href="#" data-act="edit:${to}:${r.id}">${esc(r.name)}</a>`).join(' · ')}</fieldset>`;
+}
+function openEditor(store, obj) {
+  editing = {store, obj, dirty: false};
+  const groups = [];
+  for (const f of FIELDS[store]) {
+    const g = f.g || '';
+    if (!groups.length || groups[groups.length - 1].g !== g) groups.push({g, fields: []});
+    groups[groups.length - 1].fields.push(f);
+  }
+  const rows = fs => fs.map(f => `<label title="${esc(f.k)}">${f.l}</label><div>${inputHTML(f, obj[f.k], obj)}</div>`).join('');
+  const body = groups.length > 1
+    ? groups.map((gr, i) => `<details class=grp ${i === 0 || (i === 1 && store === 'minis') ? 'open' : ''}>
+        <summary>${esc(gr.g)}</summary><div class=frm>${rows(gr.fields)}</div></details>`).join('')
+    : `<div class=frm>${rows(groups[0].fields)}</div>`;
+  const extra = {
+    minis: o => (o.id ? `<button data-act=dup>Duplicate</button>` : '') + `<button data-act=receipt>Parse receipt</button>`,
+    kits: () => `<button data-act=receipt>Parse receipt</button>`,
+    models: o => o.fileId ? `<button data-act=view3dcur>View in 3D</button>` : '',
+  }[store];
+  dlg.innerHTML = `<h3>${obj.id ? 'Edit' : 'New'} ${LABEL[store]}${obj.name ? ` — ${esc(obj.name)}` : ''}</h3>
+    <form id=efrm onsubmit="return false">${body}</form>
+    ${store === 'minis' ? `<div id=photoSecWrap>${photoSecHTML(obj)}</div><div id=scanWrap>${scanSecHTML(obj)}</div><div id=postsWrap>${postsSecHTML(obj)}</div>` : ''}
+    ${backlinksHTML(store, obj)}
+    <footer>
+      <button data-act=save>Save</button>
+      ${extra ? extra(obj) : ''}
+      ${obj.id ? '<button data-act=delete class=danger>Delete</button>' : ''}
+      <button data-act=close>Close</button>
+    </footer>`;
+  if (!dlg.open) dlg.showModal();
+  hydrate(dlg);
+  tickTimer();
+}
+dlg.addEventListener('input', () => { if (editing) editing.dirty = true; });
+dlg.addEventListener('cancel', e => { if (editing?.dirty && !confirm('Discard unsaved changes?')) e.preventDefault(); });
+const closeEditor = () => { if (!editing?.dirty || confirm('Discard unsaved changes?')) { editing = null; dlg.close(); } };
+
+// ---------- filtering / sorting ----------
+let tab = 'minis', flt = {}, selMode = false, selSet = new Set();
+const QKEYS = {name:'name', game:'game', faction:'faction', unit:'unit', tag:'tags', stage:'stage', status:'disposition',
+  painter:'painters', owner:'owner', scale:'scale', material:'material', note:'notes', paint:'_paint', kit:'_kit'};
+function parseQuery(q) {
+  const free = [], fields = [];
+  for (const tok of (q || '').match(/[^\s"]*"[^"]*"|[^\s]+/g) || []) {
+    const m = tok.match(/^(\w+):(.*)$/);
+    const clean = s => s.replace(/"/g, '').toLowerCase();
+    if (m && QKEYS[m[1].toLowerCase()]) fields.push([QKEYS[m[1].toLowerCase()], clean(m[2])]);
+    else free.push(clean(tok));
+  }
+  return {free, fields};
+}
+function fieldValue(m, key) {
+  if (key === '_paint') return (m.paintIds || []).map(id => S.supplies.find(s => s.id === id)?.name || '').join(' ');
+  if (key === '_kit') return (m.kitIds || []).map(id => S.kits.find(s => s.id === id)?.name || '').join(' ');
+  return m[key] ?? (key === 'disposition' ? 'owned' : '');
+}
+function matchQuery(m, q) {
+  if (!q) return true;
+  const {free, fields} = parseQuery(q);
+  for (const [k, v] of fields) if (!String(fieldValue(m, k)).toLowerCase().includes(v)) return false;
+  if (!free.length) return true;
+  const hay = JSON.stringify(m).toLowerCase();   // ponytail: whole-record haystack for bare words
+  return free.every(w => hay.includes(w));
+}
+const matches = (m, f) =>
+  matchQuery(m, f.q) &&
+  !(f.game && m.game !== f.game) &&
+  !(f.stage && m.stage !== f.stage) &&
+  !(f.disp && (m.disposition || 'owned') !== f.disp) &&
+  !(f.fav && !m.favorite) &&
+  !(f.unp && PAINTED.includes(m.stage)) &&
+  !(f.exh && !(m.posts || []).length) &&
+  !(f.due && !(m.dueDate && daysUntil(m.dueDate) <= 30 && !PAINTED.includes(m.stage))) &&
+  !(f.tag && !(m.tags || '').toLowerCase().split(/\s*,\s*/).includes(f.tag.toLowerCase())) &&
+  !(f.group && !(S.groups.find(g => g.id == f.group)?.miniIds || []).includes(m.id));
+const SORTKEY = {
+  name: m => (m.name || '').toLowerCase(), game: m => (m.game || '').toLowerCase(),
+  faction: m => (m.faction || '').toLowerCase(), stage: m => STAGES.indexOf(m.stage),
+  rating: m => m.rOverall || 0, rOverall: m => m.rOverall || 0,
+  price: m => +m.price || 0, value: m => +m.estValue || 0, estValue: m => +m.estValue || 0,
+  disposition: m => m.disposition || 'owned', tags: m => (m.tags || '').toLowerCase(),
+  newest: m => m.id, due: m => m.dueDate || '9999-99-99', dueDate: m => m.dueDate || '9999-99-99',
+  painted: m => m.paintedDate || '', time: m => parseMins(m.timeToPaint),
+};
+const DESC_DEFAULT = new Set(['rating','rOverall','price','value','estValue','newest','painted','time']);
+function filterMinis() {
+  const key = SORTKEY[flt.sort] ? flt.sort : 'name';
+  const dir = flt.desc ? -1 : 1;
+  return S.minis.filter(m => matches(m, flt))
+    .sort((a, b) => { const x = SORTKEY[key](a), y = SORTKEY[key](b); return (x > y ? 1 : x < y ? -1 : 0) * dir; });
+}
+const allTags = () => [...new Set(S.minis.flatMap(m => (m.tags || '').split(',').map(t => t.trim()).filter(Boolean)))].sort();
+const getViews = () => JSON.parse(localStorage.getItem('mm-views') || '{}');
+const setView = v => { flt.view = v; localStorage.setItem('mm-view', v); renderBar(); renderGrid(); };
+
+// ---------- dashboard ----------
+function bar(label, val, max, fmt = v => v, act = '') {
+  const pct = max && val ? Math.max(2, Math.round(val / max * 100)) : 0;
+  return `<div class=brow ${act ? `data-act="${act}"` : ''} title="${esc(label)}: ${esc(fmt(val))}"><span class=blbl>${esc(label)}</span><div class=btrack><div class=bfill style="width:${pct}%"></div></div><span>${esc(fmt(val))}</span></div>`;
+}
+const tile = (num, lbl, act = '', cls = '') => `<div class="tile ${cls}" ${act ? `data-act="${act}"` : ''}><div class=tnum>${num}</div><div class=tlbl>${lbl}</div></div>`;
+function dashHTML() {
+  const q = m => +(m.qty || 1);
+  const owned = S.minis.filter(m => !GONE.includes(m.disposition) && m.disposition !== 'wishlist');
+  const total = owned.reduce((a, m) => a + q(m), 0);
+  const painted = owned.filter(m => PAINTED.includes(m.stage)).reduce((a, m) => a + q(m), 0);
+  const spent = S.minis.reduce((a, m) => a + (+m.price || 0), 0) + S.kits.reduce((a, k) => a + (+k.price || 0), 0);
+  const income = S.minis.filter(m => m.disposition === 'sold').reduce((a, m) => a + (+m.dispPrice || 0), 0);
+  const est = owned.reduce((a, m) => a + (+m.estValue || 0), 0);
+  const totMins = S.minis.reduce((a, m) => a + parseMins(m.timeToPaint), 0);
+  const rated = S.minis.filter(m => m.rOverall);
+  const restock = S.supplies.filter(s => ['low','empty'].includes(s.status));
+  const byStage = STAGES.map(st => [st, owned.filter(m => m.stage === st).reduce((a, m) => a + q(m), 0)]);
+  const games = {};
+  owned.forEach(m => { const g = m.game || '(no game)'; games[g] = (games[g] || 0) + q(m); });
+  let byGame = Object.entries(games).sort((a, b) => b[1] - a[1]);
+  if (byGame.length > 8) byGame = [...byGame.slice(0, 7), ['Other', byGame.slice(7).reduce((a, e) => a + e[1], 0)]];
+  const recent = [...S.minis].sort((a, b) => b.id - a.id).slice(0, 8);
+  const maxS = Math.max(...byStage.map(e => e[1]), 1), maxG = Math.max(...byGame.map(e => e[1]), 1);
+  // painted per month, last 12
+  const months = [];
+  const now = new Date();
+  for (let i = 11; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push(d.toISOString().slice(0, 7)); }
+  const perMonth = months.map(mo => [mo.slice(2), S.minis.filter(m => (m.paintedDate || '').startsWith(mo)).reduce((a, m) => a + q(m), 0)]);
+  const maxM = Math.max(...perMonth.map(e => e[1]), 1);
+  const due = [
+    ...S.minis.filter(m => m.dueDate && !PAINTED.includes(m.stage)).map(x => ({...x, _t: 'minis'})),
+    ...S.groups.filter(g => g.dueDate).map(x => ({...x, _t: 'groups'})),
+  ].map(x => ({...x, d: daysUntil(x.dueDate)})).filter(x => x.d <= 60).sort((a, b) => a.d - b.d).slice(0, 8);
+  const lastBk = localStorage.getItem('mm-lastBackup');
+  const bkDays = lastBk ? -daysUntil(lastBk) : null;
+  return `
+  <div class=tiles>
+    ${tile(total, 'minis owned', 'tab:minis')}
+    ${tile(total ? Math.round(painted / total * 100) + '%' : '—', 'painted')}
+    ${tile(total - painted, 'pile of shame', 'dfilter:unpainted')}
+    ${tile(S.minis.filter(m => m.disposition === 'wishlist').length, 'wishlist', 'dfilter:wishlist')}
+    ${tile(S.minis.filter(m => m.favorite).length, 'favorites', 'dfilter:fav')}
+    ${tile(S.minis.filter(m => (m.posts || []).length).length, 'exhibited / posted', 'dfilter:exh')}
+    ${tile(money(spent) || 0, 'total spent')}
+    ${tile(money(income) || 0, 'sales income')}
+    ${tile(money(est) || 0, 'est. value')}
+    ${tile(totMins ? fmtMins(totMins) : '—', 'paint time logged')}
+    ${tile(rated.length ? (rated.reduce((a, m) => a + m.rOverall, 0) / rated.length).toFixed(1) + '★' : '—', 'avg rating')}
+    ${tile(S.supplies.filter(s => s.category === 'paint').length, 'paints', 'tab:supplies')}
+    ${S.battles.length ? tile(`${S.battles.filter(b => b.result === 'win').length}–${S.battles.filter(b => b.result === 'loss').length}–${S.battles.filter(b => b.result === 'draw').length}`, 'battles W–L–D', 'tab:battles') : ''}
+  </div>
+  <div class=charts>
+    <div class=panel><h4>By stage</h4>${byStage.map(([k, v]) => bar(k, v, maxS, x => x, `dstage:${k}`)).join('')}</div>
+    <div class=panel><h4>By game</h4>${byGame.map(([k, v]) => bar(k, v, maxG, x => x, k === 'Other' ? '' : `dgame:${k}`)).join('') || '<p class=hint>No minis yet.</p>'}</div>
+  </div>
+  <div class=panel><h4>Finished per month</h4>${perMonth.some(e => e[1]) ? perMonth.map(([k, v]) => bar(k, v, maxM)).join('')
+    : '<p class=hint>Nothing dated yet — the "Finished on" date is set automatically when a mini reaches Painted.</p>'}</div>
+  ${due.length ? `<div class=panel><h4>⏳ Deadlines</h4>${due.map(x =>
+    `<div class="sub ${x.d < 0 ? 'danger' : x.d < 8 ? 'warn' : ''}" data-act="edit:${x._t}:${x.id}" style="cursor:pointer">
+      ${esc(x.name)} — ${x.d < 0 ? `${-x.d}d overdue` : x.d === 0 ? 'today' : `in ${x.d}d`} (${esc(x.dueDate)})</div>`).join('')}</div>` : ''}
+  ${restock.length ? `<div class=panel><h4>🛒 Restock needed (${restock.length})</h4>${restock.map(s =>
+    `<div class=sub>${s.color ? `<span class=chip style="background:${esc(s.color)}"></span> ` : ''}${esc(s.name)} — ${esc(s.brand || '')} <i>${esc(s.status)}</i></div>`).join('')}
+    <button data-act=shoplist>Copy shopping list</button></div>` : ''}
+  <div class=panel><h4>Recently added</h4>
+    ${recent.map(m => (m.photoIds || [])[0] ? `<img class=recent data-tid=${m.photoIds[0]} data-act="edit:minis:${m.id}" title="${esc(m.name)}">` : '').join('') || '<span class=hint>—</span>'}
+  </div>
+  <div class=panel>
+    <button data-act=spot>🎲 What should I paint next?</button>
+    <button data-act=csvin>⬆ Import CSV</button>
+    <button data-act=export>💾 Backup now</button>
+    <span class="sub ${bkDays === null || bkDays > 30 ? 'warn' : ''}">${lastBk ? `last backup ${lastBk} (${bkDays}d ago)` : 'never backed up — your data lives in this browser only'}</span>
+  </div>`;
+}
+
+// ---------- rendering ----------
+function render() { renderTabs(); renderBar(); renderGrid(); renderDatalists(); }
+function renderTabs() {
+  $('#tabs').innerHTML = Object.entries(TABS)
+    .map(([k, l]) => `<button data-act="tab:${k}" class="${k === tab ? 'active' : ''}">${l}</button>`).join('');
+}
+function renderDatalists() {
+  const uniq = key => [...new Set([...S.minis, ...S.kits, ...S.groups].map(x => x[key]).filter(Boolean))];
+  $('#games').innerHTML = uniq('game').map(g => `<option>${esc(g)}</option>`).join('');
+  $('#factions').innerHTML = [...new Set(S.minis.map(m => m.faction).filter(Boolean))].map(g => `<option>${esc(g)}</option>`).join('');
+}
+function renderBar() {
+  if (tab === 'dash') { $('#bar').innerHTML = ''; return; }
+  const nw = LABEL[tab] ? `<button data-act=new>＋ New ${LABEL[tab]}</button>` : '';
+  if (tab !== 'minis') {
+    $('#bar').innerHTML = `<input id=q placeholder=Search value="${esc(flt.q)}"> ${nw}
+      ${tab === 'supplies' ? '<button data-act=shoplist>🛒 Shopping list</button>' : ''}`;
+    return;
+  }
+  const opt = (list, sel) => list.map(o => `<option ${o === sel ? 'selected' : ''}>${esc(o)}</option>`).join('');
+  const views = getViews();
+  $('#bar').innerHTML = `
+    <input id=q placeholder="Search — try game:fantasy stage:primed  ( / )" value="${esc(flt.q)}" size=28>
+    <select id=fGame><option value="">All games</option>${opt([...new Set(S.minis.map(m => m.game).filter(Boolean))], flt.game)}</select>
+    <select id=fStage><option value="">Any stage</option>${opt(STAGES, flt.stage)}</select>
+    <select id=fDisp><option value="">Any status</option>${opt(['owned','wishlist','lost','sold','gifted away'], flt.disp)}</select>
+    <select id=fTag><option value="">Any tag</option>${opt(allTags(), flt.tag)}</select>
+    <select id=fGroup><option value="">Any set/army</option>${S.groups.map(g => `<option value=${g.id} ${g.id == flt.group ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select>
+    <label title="Favorites"><input type=checkbox id=fFav ${flt.fav ? 'checked' : ''}> ★</label>
+    <label title="Posted/exhibited"><input type=checkbox id=fExh ${flt.exh ? 'checked' : ''}> 📸</label>
+    <label title="Due within 30 days"><input type=checkbox id=fDue ${flt.due ? 'checked' : ''}> ⏳</label>
+    <select id=sort>${['name','game','stage','rating','price','value','time','due','painted','newest'].map(o => `<option ${o === flt.sort ? 'selected' : ''}>${o}</option>`).join('')}</select>
+    <button data-act=sortdir title="Sort direction">${flt.desc ? '▾' : '▴'}</button>
+    <button data-act=viewmode title="Grid / table (g)">${flt.view === 'table' ? '▦' : '▤'}</button>
+    <select id=views><option value="">Views…</option>${Object.keys(views).map(v => `<option>${esc(v)}</option>`).join('')}</select>
+    <button data-act=saveview title="Save current filters as a view">💾</button>
+    <button data-act=clearflt title="Clear filters">✕</button>
+    ${nw}<input id=quick placeholder="quick add name…" size=14 title="Type a name and press Enter">
+    <button data-act=saveshow title="Save current subset as slideshow">🎬</button>
+    <button data-act=csv title="Export filtered minis to CSV">CSV</button>
+    <button data-act=print title="Print inventory">🖨</button>
+    <button data-act=selmode title="Bulk select">${selMode ? '☑ Selecting' : '☐ Select'}</button>
+    ${selMode ? `<span class=sub>${selSet.size} selected</span>
+      <button data-act=selall>All</button>
+      <select id=bStage><option value="">Set stage…</option>${opt(STAGES)}</select>
+      <select id=bGroup><option value="">Add to set/army…</option>${S.groups.map(g => `<option value=${g.id}>${esc(g.name)}</option>`).join('')}</select>
+      <input id=bTag placeholder="add tag" style="width:80px"><button data-act=btag>Tag</button>
+      <button data-act=bfav>★ all</button>
+      <button data-act=bdel class=danger>Delete</button>` : ''}`;
+}
+const nextStage = s => STAGES[Math.min(STAGES.indexOf(s) + 1, STAGES.length - 1)];
+function miniCard(m) {
+  const pid = (m.photoIds || [])[0];
+  const tags = (m.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+  const d = m.dueDate && !PAINTED.includes(m.stage) ? daysUntil(m.dueDate) : null;
+  return `<div class="card ${selSet.has(m.id) ? 'selected' : ''}" tabindex=0 data-act="edit:minis:${m.id}">
+    ${pid ? `<img data-tid=${pid} loading=lazy alt="">` : `<div class=noimg>🎨</div>`}
+    <div class=cbody>
+      <div class=crow><b>${esc(m.name)}${num(m.qty) > 1 ? ` ×${num(m.qty)}` : ''}</b><button class=star data-act="fav:${m.id}" title="Favorite">${m.favorite ? '★' : '☆'}</button></div>
+      <div class=sub>${esc([m.game, m.faction, m.unit].filter(Boolean).join(' • '))}</div>
+      <div class=sub>${esc(m.stage || '')}
+        <button class=mini-act data-act="adv:${m.id}" title="Advance to ${esc(nextStage(m.stage))}">▸</button>
+        ${stars(m.rOverall)}
+        ${m.disposition && m.disposition !== 'owned' ? `<i>${esc(m.disposition)}</i>` : ''}
+        ${m.disposition === 'wishlist' ? `<button class=mini-act data-act="buy:${m.id}" title="Mark as acquired">✔</button>` : ''}
+        ${d !== null ? `<span class="${d < 0 ? 'danger' : d < 8 ? 'warn' : 'hint'}">⏳${d < 0 ? `${-d}d late` : `${d}d`}</span>` : ''}
+      </div>
+      ${tags.length ? `<div>${tags.map(t => `<span class=tag data-act="ftag:${esc(t)}">${esc(t)}</span>`).join('')}</div>` : ''}
+      <div class=sub>
+        ${linkIf(m.statsUrl, 'stats')}
+        ${linkIf(m.loreUrl, 'lore')}
+        ${(m.posts || []).length ? linkIf(m.posts[0].url, `📸${m.posts.length > 1 ? m.posts.length : ''}`) : ''}
+        ${(m.modelIds || []).length ? `<button class=mini-act data-act="view3d:${m.modelIds[0]}" title="View 3D">🧊</button>` : ''}
+      </div>
+    </div></div>`;
+}
+function tableHTML(list) {
+  const cols = [['name','Name'],['game','Game'],['faction','Faction'],['stage','Stage'],['rOverall','★'],['time','Time'],['price','Price'],['dueDate','Due'],['disposition','Status'],['tags','Tags']];
+  const cell = (m, k) => k === 'name' ? esc(m.name) + (num(m.qty) > 1 ? ` ×${num(m.qty)}` : '')
+    : k === 'rOverall' ? stars(m.rOverall)
+    : k === 'price' ? money(m.price) : k === 'time' ? (m.timeToPaint ? esc(m.timeToPaint) : '')
+    : k === 'disposition' ? esc(m.disposition || 'owned') : esc(m[k] || '');
+  return `<table class=tbl><thead><tr><th></th>${cols.map(([k, l]) =>
+    `<th data-act="sortcol:${k}">${l}${flt.sort === k ? (flt.desc ? ' ▾' : ' ▴') : ''}</th>`).join('')}</tr></thead><tbody>
+    ${list.map(m => `<tr data-act="edit:minis:${m.id}">
+      <td>${(m.photoIds || [])[0] ? `<img class=tth data-tid=${m.photoIds[0]} loading=lazy>` : ''}</td>
+      ${cols.map(([k]) => `<td>${cell(m, k)}</td>`).join('')}</tr>`).join('')}
+    </tbody></table>`;
+}
+function queueHTML() {
+  const pool = S.minis.filter(m => !GONE.includes(m.disposition) && m.disposition !== 'wishlist' && matchQuery(m, flt.q));
+  return `<div class=board>${STAGES.map(st => {
+    const ms = pool.filter(m => (m.stage || 'Unassembled') === st);
+    return `<div class=col data-stage="${st}"><h4>${st} (${ms.length})</h4>
+      ${ms.map(m => `<div class=qcard draggable=true data-drag=${m.id} data-act="edit:minis:${m.id}">
+        ${(m.photoIds || [])[0] ? `<img data-tid=${m.photoIds[0]} loading=lazy>` : ''}${esc(m.name)}</div>`).join('')}</div>`;
+  }).join('')}</div>`;
+}
+let galleryPairs = [];
+function renderGrid() {
+  const grid = $('#grid');
+  const list = tab === 'minis' ? filterMinis() : null;
+  grid.className = (tab === 'dash' || tab === 'queue' || tab === 'gallery' || (tab === 'minis' && flt.view === 'table')) ? 'free' : '';
+  const q = o => matchQuery(o, flt.q);
+  let html = '';
+  if (tab === 'dash') html = dashHTML();
+  else if (tab === 'queue') html = queueHTML();
+  else if (tab === 'minis') html = flt.view === 'table' ? tableHTML(list) : list.map(miniCard).join('');
+  else if (tab === 'kits') html = S.kits.filter(q).map(k =>
+    card('kits', k, esc([k.manufacturer, k.game].filter(Boolean).join(' • ')),
+      `${money(k.price)} ${esc(k.acqDate || '')} ${esc(k.acqLocation || '')}`,
+      `<div class=sub>${S.minis.filter(m => (m.kitIds || []).includes(k.id)).length} minis built${k.receiptId ? ` · <a href="#" data-act="view:${k.receiptId}">receipt</a>` : ''}</div>`)).join('');
+  else if (tab === 'groups') html = S.groups.filter(q).map(g => {
+    const ms = (g.miniIds || []).map(id => S.minis.find(m => m.id === id)).filter(Boolean);
+    const done = ms.filter(m => PAINTED.includes(m.stage)).length;
+    const cost = ms.reduce((a, m) => a + (+m.price || 0), 0);
+    const pct = ms.length ? Math.round(done / ms.length * 100) : 0;
+    const bt = S.battles.filter(b => b.groupId === g.id);
+    const recTxt = bt.length ? ` • ⚔ ${bt.filter(b => b.result === 'win').length}W ${bt.filter(b => b.result === 'loss').length}L ${bt.filter(b => b.result === 'draw').length}D` : '';
+    return card('groups', g, esc([g.type, g.game].filter(Boolean).join(' • ')),
+      `${ms.length} minis • ${done}/${ms.length} painted${g.points ? ` • ${num(g.points)} pts` : ''}${cost ? ` • ${money(cost)}` : ''}${recTxt}`,
+      `<div class=btrack style="margin-top:6px"><div class=bfill style="width:${Math.max(2, pct)}%"></div></div>
+       ${g.dueDate ? `<div class="sub ${daysUntil(g.dueDate) < 8 ? 'warn' : ''}">⏳ ${esc(g.dueDate)}</div>` : ''}
+       <div class=sub><button data-act="gshow:${g.id}">🎬 Slideshow</button> <button data-act="gcopy:${g.id}" title="Copy roster as text">📋 List</button></div>`);
+  }).join('');
+  else if (tab === 'battles') html = [...S.battles].sort((a, b) => (b.date || '').localeCompare(a.date || '')).filter(q).map(b => {
+    const army = S.groups.find(g => g.id === b.groupId);
+    const badge = {win:'🏆 Win', loss:'💀 Loss', draw:'🤝 Draw'}[b.result] || '';
+    return card('battles', b, esc([b.date, b.game, b.location].filter(Boolean).join(' • ')),
+      `${army ? esc(army.name) : ''}${b.opponent ? ` vs ${esc(b.opponent)}` : ''}${b.oppArmy ? ` (${esc(b.oppArmy)})` : ''}${b.points ? ` • ${num(b.points)} pts` : ''}`,
+      badge ? `<div class=sub><b>${badge}</b></div>` : '');
+  }).join('');
+  else if (tab === 'gallery') {
+    // ponytail: full-res URLs resolve per photo on lightbox open; fine to a few hundred shots
+    galleryPairs = [];
+    for (const m of S.minis.filter(x => matchQuery(x, flt.q)))
+      for (const pid of m.photoIds || []) galleryPairs.push({m, pid});
+    html = galleryPairs.length
+      ? `<div class=wall>${galleryPairs.map((p, i) => `<img class=wimg data-tid=${p.pid} loading=lazy data-act="glight:${i}" title="${esc(p.m.name)}" alt="${esc(p.m.name)}">`).join('')}</div>`
+      : `<p class=hint>No photos yet — add some on your minis.</p>`;
+  }
+  else if (tab === 'supplies') html = S.supplies.filter(q).map(s =>
+    card('supplies', s,
+      `${s.category === 'paint' && s.color ? `<span class=chip style="background:${esc(s.color)}"></span> ` : ''}${esc([s.category, s.brand, s.range].filter(Boolean).join(' • '))}`,
+      `${esc(s.status || '')}${s.qty ? ` ×${s.qty}` : ''} · used in ${S.minis.filter(m => [...(m.paintIds || []), ...(m.toolIds || [])].includes(s.id)).length}`)).join('');
+  else if (tab === 'models') html = S.models.filter(q).map(m =>
+    card('models', m, esc([m.designer, m.printed].filter(Boolean).join(' • ')),
+      `${(m.miniIds || []).length} physical minis`,
+      `<div class=sub>${m.fileId ? `<button data-act="view3d:${m.id}">🧊 View 3D</button> <a data-dl=${m.fileId}>download</a>` : ''} ${linkIf(m.sourceUrl, 'source')}</div>`)).join('');
+  else if (tab === 'shows') html = S.shows.filter(q).map(s =>
+    card('shows', s, `${(s.miniIds || []).length} slides • ${s.secs || 2}s each${s.allPhotos ? ' • all photos' : ''}`, '',
+      `<div class=sub><button data-act="play:${s.id}">▶ Play</button> <button data-act="expshow:${s.id}">WebM</button> <button data-act="expgif:${s.id}">GIF</button></div>`)).join('');
+  grid.innerHTML = html || `<p class=hint>Nothing here yet${flt.q || flt.game || flt.stage ? ' matching those filters' : ' — hit ＋ New'}.</p>`;
+  hydrate(grid);
+}
+function card(store, o, sub1, sub2, extra = '') {
+  return `<div class=card tabindex=0 data-act="edit:${store}:${o.id}"><div class=cbody>
+    <div class=crow><b>${esc(o.name)}</b></div>
+    <div class=sub>${sub1}</div><div class=sub>${sub2}</div>${extra}</div></div>`;
+}
+
+// ---------- player ----------
+const player = $('#player'), pimg = $('#pimg');
+let pframes = [], pidx = 0, ptimer = null, dragX = null, pOwner = null;
+function showFrame() { const f = pframes[pidx]; pimg.src = f.url; $('#pcap').textContent = f.cap || ''; }
+function openPlayer(frames, secs, start = 0) {
+  pframes = frames; pidx = start; showFrame();
+  if (!player.open) player.showModal();
+  clearInterval(ptimer); ptimer = null;
+  if (secs) ptimer = setInterval(() => { pidx = (pidx + 1) % pframes.length; showFrame(); }, secs * 1000);
+}
+player.addEventListener('close', () => { clearInterval(ptimer); ptimer = null; });
+pimg.addEventListener('pointerdown', e => { dragX = e.clientX; pimg.setPointerCapture(e.pointerId); });
+pimg.addEventListener('pointerup', () => dragX = null);
+pimg.addEventListener('pointermove', e => {
+  if (dragX == null || ptimer) return;
+  const d = e.clientX - dragX;
+  if (Math.abs(d) > 15) { pidx = (pidx + (d > 0 ? 1 : -1) + pframes.length) % pframes.length; dragX = e.clientX; showFrame(); }
+});
+
+// ---------- video export ----------
+async function recordFrames(urls, msPerFrame, name, kenBurns = false) {
+  const mime = ['video/webm;codecs=vp9','video/webm','video/mp4'].find(m => MediaRecorder.isTypeSupported(m)) || '';
+  const imgs = await loadImgs(urls);
+  const c = document.createElement('canvas'); c.width = 960; c.height = 720;
+  const ctx = c.getContext('2d');
+  const rec = new MediaRecorder(c.captureStream(30), mime ? {mimeType:mime} : {});
+  const chunks = []; rec.ondataavailable = e => chunks.push(e.data);
+  const done = new Promise(r => rec.onstop = r);
+  rec.start();
+  for (const im of imgs) {
+    const steps = kenBurns ? Math.max(1, Math.round(msPerFrame / 40)) : 1;
+    for (let s = 0; s < steps; s++) {
+      const z = kenBurns ? 1 + 0.08 * s / steps : 1;
+      ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 960, 720);
+      const sc = Math.min(960 / im.width, 720 / im.height) * z, w = im.width * sc, h = im.height * sc;
+      ctx.drawImage(im, (960 - w) / 2, (720 - h) / 2, w, h);
+      await new Promise(r => setTimeout(r, msPerFrame / steps));
+    }
+  }
+  rec.stop(); await done;
+  downloadBlob(new Blob(chunks, {type: rec.mimeType}), safeName(name) + '.webm');
+}
+const spinUrls = m => Promise.all((m.photoIds || []).map(id => blobURL(id)));
+async function showFrames(s) {
+  const frames = [];
+  for (const mid of s.miniIds || []) {
+    const m = S.minis.find(x => x.id === mid);
+    const ids = s.allPhotos ? (m?.photoIds || []) : (m?.photoIds || []).slice(0, 1);
+    for (const pid of ids) frames.push({url: await blobURL(pid), cap: m.name});
+  }
+  return frames;
+}
+
+// ---------- share card (Instagram-ready) ----------
+async function shareCard(m) {
+  const pid = (m.photoIds || [])[0]; if (!pid) return;
+  const img = (await loadImgs([await blobURL(pid)]))[0];
+  const W = 1080, H = 1350, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = '#14161a'; g.fillRect(0, 0, W, H);
+  const sc = Math.max(W / img.width, 1080 / img.height);
+  g.drawImage(img, (W - img.width * sc) / 2, (1080 - img.height * sc) / 2, img.width * sc, img.height * sc);
+  const grd = g.createLinearGradient(0, 820, 0, 1080);
+  grd.addColorStop(0, 'rgba(20,22,26,0)'); grd.addColorStop(1, '#14161a');
+  g.fillStyle = grd; g.fillRect(0, 820, W, 260);
+  g.fillStyle = '#dde'; g.font = '600 62px system-ui'; g.fillText(m.name.slice(0, 24), 60, 1145);
+  g.fillStyle = '#9ab'; g.font = '34px system-ui';
+  g.fillText([m.game, m.faction, m.unit].filter(Boolean).join(' · ').slice(0, 46), 60, 1198);
+  const bits = [m.stage, m.timeToPaint && `${m.timeToPaint} to paint`, m.painters && `by ${m.painters}`].filter(Boolean);
+  g.fillText(bits.join(' · ').slice(0, 46), 60, 1248);
+  if (m.rOverall) { g.fillStyle = '#e8c34a'; g.font = '40px system-ui'; g.fillText(stars(m.rOverall), 60, 1305); }
+  g.fillStyle = '#56607a'; g.font = '26px system-ui';
+  g.fillText('MicroMiniger', W - 240, 1305);
+  downloadBlob(await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)), safeName(m.name) + '-card.jpg');
+}
+
+// ---------- CSV ----------
+const CSVCOLS = ['name','qty','game','faction','unit','scale','material','baseSize','tags','stage','disposition','favorite','acquired','price','priceScope','acqDate','acqLocation','acqFrom','estValue','dueDate','paintedDate','dispDate','dispPrice','timeToPaint','rOverall','rPaint','rAssembly','rVarnish','rSculpt','painters','owner','formerOwners','extras','kitbashNotes','damage','notes'];
+function exportCSV() {
+  const qq = v => `"${(v ?? '').toString().replace(/"/g, '""')}"`;
+  const rows = [CSVCOLS.join(','), ...filterMinis().map(m => CSVCOLS.map(c => qq(m[c])).join(','))];
+  downloadBlob(new Blob([rows.join('\r\n')], {type:'text/csv'}), 'minis.csv');
+}
+const NUMCOLS = new Set(['qty','price','estValue','dispPrice','rOverall','rPaint','rAssembly','rVarnish','rSculpt']);
+function csvToMinis(text) {
+  const rows = parseCSV(text).filter(r => r.some(c => c.trim() !== ''));
+  if (rows.length < 2) return [];
+  const head = rows[0].map(h => h.trim());
+  const idx = {};
+  head.forEach((h, i) => { const k = CSVCOLS.find(c => c.toLowerCase() === h.toLowerCase()); if (k) idx[k] = i; });
+  if (idx.name == null) throw new Error('CSV needs a "name" column.');
+  return rows.slice(1).map(r => {
+    const o = {};
+    for (const [k, i] of Object.entries(idx)) {
+      const v = (r[i] ?? '').trim();
+      if (v === '') continue;
+      o[k] = NUMCOLS.has(k) ? +v : k === 'favorite' ? /^(true|yes|1|★)$/i.test(v) : v;
+    }
+    if (!o.stage) o.stage = 'Unassembled';
+    return o;
+  }).filter(o => o.name);
+}
+async function importCSV(file) {
+  try {
+    const rows = csvToMinis(await file.text());
+    if (!rows.length) return alert('No rows found.');
+    if (!confirm(`Add ${rows.length} minis from this CSV? (existing entries are not touched)`)) return;
+    for (const r of rows) await put('minis', r);
+    await refresh();
+    alert(`Imported ${rows.length} minis.`);
+  } catch (e) { alert('CSV import failed: ' + e.message); }
+}
+
+// ---------- backup ----------
+async function buildBackupBlob() {
+  const out = {};
+  for (const s of STORES) out[s] = await getAll(s);
+  out.blobs = await Promise.all(out.blobs.map(b => new Promise(res => {
+    const r = new FileReader(); r.onload = () => res({id:b.id, name:b.name, b64:r.result}); r.readAsDataURL(b.blob);
+  })));
+  return new Blob([JSON.stringify(out)], {type:'application/json'});
+}
+function backupDone() {
+  localStorage.setItem('mm-lastBackup', today());
+  if (tab === 'dash') renderGrid();
+  updateStatus();
+}
+async function exportAll() {
+  downloadBlob(await buildBackupBlob(), `microminiger-${today()}.json`);
+  backupDone();
+}
+
+// ---------- cloud backup (local folder / Google Drive app-data) ----------
+const driveIdCfg = () => localStorage.getItem('mm-driveid') || '';
+async function renderSync() {
+  const dlg2 = $('#syncDlg');
+  const folderName = SY.folder.supported() ? await SY.folder.name() : null;
+  const prof = SY.getDriveProfile();
+  const driveOK = SY.drive.available(driveIdCfg());
+  dlg2.innerHTML = `<h3 style="margin-top:0">☁ Cloud backup</h3>
+    <p class=sub>Backs up your entire collection (photos included) as one file. Your browser talks
+    directly to the folder or to Google Drive — there is no middleman server.</p>
+    <fieldset><legend>Local folder — point it at a Drive / Dropbox / OneDrive sync folder</legend>
+      ${SY.folder.supported()
+        ? `<div class=sub>${folderName ? `Connected: <b>${esc(folderName)}</b>` : 'Not connected.'}</div>
+           <footer>
+             <button data-act=sfpick>${folderName ? 'Change folder' : 'Choose folder'}</button>
+             ${folderName ? `<button data-act=sfup>⬆ Back up now</button>
+             <button data-act=sfdown>⬇ Restore</button>
+             <button data-act=sfout class=danger>Forget</button>` : ''}
+           </footer>`
+        : `<div class=sub>This browser doesn't support folder access — use Google Drive or the manual Backup button.</div>`}
+    </fieldset>
+    <fieldset><legend>Google Drive — private app folder</legend>
+      ${driveOK ? `
+        <div class=sub>${SY.drive.connected() && prof
+          ? `Signed in as <b>${esc(prof.name)}</b> ${prof.picture ? `<img src="${esc(prof.picture)}" style="width:18px;height:18px;border-radius:50%;vertical-align:-4px" alt="">` : ''} <span id=sgstat></span>`
+          : 'Not signed in. Sign-in opens a Google popup; nothing is stored outside your Drive.'}</div>
+        <footer>
+          ${SY.drive.connected()
+            ? `<button data-act=sgup>⬆ Back up now</button>
+               <button data-act=sgdown>⬇ Restore</button>
+               <button data-act=sgout class=danger>Sign out</button>`
+            : `<button data-act=sgconn>Sign in with Google</button>`}
+        </footer>
+        <label class=sub><input type=checkbox id=autoBk ${localStorage.getItem('mm-autobk') === '1' ? 'checked' : ''}>
+          Auto-backup to Drive daily on launch (silent — only while a sign-in is still valid)</label>`
+      : `<div class=sub>Drive backup isn't enabled on this deployment. Forks need their own OAuth client ID:</div>`}
+      <div class=sub style="margin-top:6px"><input id=driveId placeholder="Custom OAuth client ID (forks only)" value="${esc(driveIdCfg())}" size=40></div>
+    </fieldset>
+    <footer><button data-act=syncclose>Close</button></footer>`;
+  if (!dlg2.open) dlg2.showModal();
+  if (SY.drive.connected()) {
+    try {
+      const conn = await SY.drive.connect(driveIdCfg());
+      const t = await SY.drive.stat(conn, SY.BACKUP_NAME);
+      const el = $('#sgstat');
+      if (el) el.textContent = t ? `· cloud copy: ${new Date(t).toLocaleString()}` : '· no cloud copy yet';
+    } catch { /* cosmetic */ }
+  }
+}
+async function cloudUp(provider) {
+  const conn = provider === 'drive' ? await SY.drive.connect(driveIdCfg()) : await SY.folder.connect();
+  const api = provider === 'drive' ? SY.drive : SY.folder;
+  await api.upload(conn, SY.BACKUP_NAME, await buildBackupBlob());
+  localStorage.setItem('mm-lastCloudBk', String(Date.now()));
+  backupDone();
+  toast('Cloud backup saved ✔');
+}
+async function cloudDown(provider) {
+  const conn = provider === 'drive' ? await SY.drive.connect(driveIdCfg()) : await SY.folder.connect();
+  const api = provider === 'drive' ? SY.drive : SY.folder;
+  const blob = await api.download(conn, SY.BACKUP_NAME);
+  if (!blob) return alert('No cloud backup found yet.');
+  await importAll(new File([blob], SY.BACKUP_NAME, {type: 'application/json'}));
+}
+async function importAll(file) {
+  if (!file || !confirm('Replace ALL current data with this backup?')) return;
+  const data = JSON.parse(await file.text());
+  for (const s of STORES) await rq(db.transaction(s, 'readwrite').objectStore(s).clear());
+  for (const s of STORES) for (const item of data[s] || []) {
+    if (!item || typeof item !== 'object') continue;
+    if (s === 'blobs') { item.blob = dataURLtoBlob(item.b64); delete item.b64; item.thumb = await makeThumb(item.blob); }
+    await put(s, sanitize(item));
+  }
+  urlCache.clear(); await refresh();
+  alert('Restored.');
+}
+
+// ---------- status / storage ----------
+async function updateStatus() {
+  const running = S.minis?.find(m => m.timerStart);
+  let txt = '';
+  if (navigator.storage?.estimate) {
+    const {usage} = await navigator.storage.estimate();
+    const persisted = await navigator.storage.persisted?.().catch(() => false);
+    txt = `${(usage / 1e6).toFixed(1)} MB${persisted ? '' : ' · evictable'}`;
+  }
+  $('#status').innerHTML = (running ? `<span class=timer>⏱ ${esc(running.name)}</span> · ` : '') + esc(txt);
+}
+function tickTimer() {
+  const el = $('#timerNow');
+  if (!el || !editing?.obj?.timerStart) return;
+  el.textContent = fmtMins(Math.round((Date.now() - editing.obj.timerStart) / 60000)) + ' running';
+}
+setInterval(tickTimer, 20000);
+
+// ---------- undo toast ----------
+let toastUndo = null, toastFinal = null, toastTimer = null;
+function toast(msg, undo, finalize) {
+  clearTimeout(toastTimer); toastFinal?.();
+  $('#toastMsg').textContent = msg; $('#toastBox').hidden = false;
+  $('#toastBox button').hidden = !undo;
+  toastUndo = undo; toastFinal = finalize;
+  toastTimer = setTimeout(() => { $('#toastBox').hidden = true; toastFinal?.(); toastFinal = null; }, 8000);
+}
+
+// ---------- events ----------
+document.addEventListener('click', async e => {
+  const a = e.target.closest('a');
+  if (a && (a.target === '_blank' || a.download)) return;
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  e.preventDefault();
+  const [act, ...args] = t.dataset.act.split(':');
+  const rest = args.join(':');
+  const m = editing?.obj;
+  switch (act) {
+    case 'tab': tab = args[0]; flt = {view: flt.view}; selMode = false; selSet.clear(); render(); break;
+    case 'new': openEditor(tab, {}); break;
+    case 'edit': {
+      if (selMode && args[0] === 'minis') {
+        const id = +args[1];
+        selSet.has(id) ? selSet.delete(id) : selSet.add(id);
+        renderBar(); renderGrid(); break;
+      }
+      openEditor(args[0], S[args[0]].find(o => o.id === +args[1])); break;
+    }
+    case 'fav': { const x = S.minis.find(o => o.id === +args[0]); x.favorite = !x.favorite; await put('minis', x); refresh(); break; }
+    case 'adv': {
+      const x = S.minis.find(o => o.id === +args[0]);
+      x.stage = nextStage(x.stage);
+      if (PAINTED.includes(x.stage) && !x.paintedDate) x.paintedDate = today();
+      await put('minis', x); refresh(); break;
+    }
+    case 'ftag': flt.tag = rest; tab = 'minis'; render(); break;
+    case 'dstage': flt = {...flt, stage: rest}; tab = 'minis'; render(); break;
+    case 'dgame': flt = {...flt, game: rest}; tab = 'minis'; render(); break;
+    case 'dfilter': {
+      flt = {view: flt.view};
+      if (rest === 'unpainted') { flt.unp = true; flt.disp = 'owned'; flt.sort = 'stage'; }
+      if (rest === 'wishlist') flt.disp = 'wishlist';
+      if (rest === 'fav') flt.fav = true;
+      if (rest === 'exh') flt.exh = true;
+      tab = 'minis'; render();
+      break;
+    }
+    case 'close': closeEditor(); break;
+    case 'pclose': player.close(); break;
+    case 'helpclose': $('#help').close(); break;
+    case 'help': $('#help').showModal(); break;
+    case 'glclose': $('#glDlg').close(); break;
+    case 'glflip': if (viewer) { viewer.upFlip = !viewer.upFlip; viewer.sort?.(); viewer.draw(); } break;
+    case 'glwebm': { const u = await orbitFrames(viewer, 48); recordFrames(u, 60, $('#glName').textContent); break; }
+    case 'glgif': { const u = await orbitFrames(viewer, 36); exportGIF(u, 6, $('#glName').textContent); break; }
+    case 'view3d': viewModel(S.models.find(x => x.id === +args[0])); break;
+    case 'view3dcur': viewModel(m); break;
+    case 'scan': openScan(m); break;
+    case 'capzip': exportCapture(m); break;
+    case 'scanrun': scanRun(); break;
+    case 'scansave': scanSave(); break;
+    case 'scanstl': downloadBlob(new Blob([R3.meshToSTL(scanMesh)]), safeName(scanMini.name) + '-scan.stl'); break;
+    case 'scanply': downloadBlob(new Blob([R3.meshToPLY(scanMesh)]), safeName(scanMini.name) + '-scan.ply'); break;
+    case 'scanclose': $('#scanDlg').close(); break;
+    case 'theme': {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next; localStorage.setItem('mm-theme', next); break;
+    }
+    case 'currency': {
+      const c = prompt('Currency symbol:', CUR);
+      if (c != null) { CUR = c; localStorage.setItem('mm-cur', c); render(); } break;
+    }
+    case 'save': {
+      const {store, obj} = editing;
+      const before = obj.stage;
+      await readForm($('#efrm'), FIELDS[store], obj);
+      if (store === 'battles' && !obj.name) obj.name = `${obj.game || 'Battle'} ${obj.date || today()}`;
+      if (!obj.name) return alert('Name is required.');
+      if (store === 'minis') {
+        if (PAINTED.includes(obj.stage) && !PAINTED.includes(before) && !obj.paintedDate) obj.paintedDate = today();
+        if (!obj.id) {
+          const dupe = S.minis.find(x => x.name.toLowerCase() === obj.name.toLowerCase() && (x.game || '') === (obj.game || ''));
+          if (dupe && !confirm(`"${obj.name}" already exists in ${obj.game || 'no game'}. Add another?`)) return;
+        }
+      }
+      obj.id = await put(store, obj);
+      editing.dirty = false;
+      await refresh();
+      store === 'minis' && !$('#photoAdd') ? openEditor('minis', obj) : dlg.close();
+      break;
+    }
+    case 'timer': {
+      if (!m.id) { alert('Save the mini first, then start the timer.'); break; }
+      await readForm($('#efrm'), FIELDS.minis, m);   // keep whatever else was typed
+      if (m.timerStart) {
+        const mins = Math.max(1, Math.round((Date.now() - m.timerStart) / 60000));
+        m.timerStart = null;
+        const el = $('#efrm').elements.timeToPaint;
+        el.value = fmtMins(parseMins(el.value) + mins);
+        const log = $('#efrm').elements.workLog;
+        log.value = `[${today()}] painted ${fmtMins(mins)}` + (log.value ? '\n' + log.value : '');
+        m.timeToPaint = el.value; m.workLog = log.value;
+      } else m.timerStart = Date.now();
+      await put('minis', m);
+      await refresh();
+      openEditor('minis', m);
+      editing.dirty = false;
+      break;
+    }
+    case 'dup': {
+      const c = {...m}; delete c.id; delete c.photoIds; delete c.posts; delete c.timerStart;
+      c.name = (c.name || '') + ' (copy)';
+      c.id = await put('minis', c); await refresh(); openEditor('minis', c); break;
+    }
+    case 'delete': {
+      const {store, obj} = editing;
+      if (!confirm(`Delete "${obj.name}"?`)) return;
+      await del(store, obj.id); editing = null; await refresh(); dlg.close();
+      const bids = [...(obj.photoIds || []), ...(BLOBKEYS[store] || []).map(k => obj[k])].filter(Boolean);
+      toast(`Deleted “${obj.name}”`,
+        async () => { await put(store, obj); refresh(); },
+        async () => { for (const b of bids) { await del('blobs', b); dropURL(b); } });
+      break;
+    }
+    case 'undo': { clearTimeout(toastTimer); $('#toastBox').hidden = true; toastFinal = null; await toastUndo?.(); break; }
+    case 'view': window.open(await blobURL(+args[0])); break;
+    case 'light': {
+      const urls = await spinUrls(m);
+      pOwner = m;
+      openPlayer(urls.map((url, i) => ({url, cap: `${m.name} (${i + 1}/${urls.length})`})), 0, +args[0]);
+      break;
+    }
+    case 'protate': {
+      if (!pOwner?.photoIds?.[pidx]) { alert('Open a photo from a mini to rotate it.'); break; }
+      const id = pOwner.photoIds[pidx], b = await getOne('blobs', id);
+      const bmp = await createImageBitmap(b.blob);
+      const c = document.createElement('canvas'); c.width = bmp.height; c.height = bmp.width;
+      const g = c.getContext('2d');
+      g.translate(c.width / 2, c.height / 2); g.rotate(Math.PI / 2);
+      g.drawImage(bmp, -bmp.width / 2, -bmp.height / 2);
+      bmp.close?.();
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+      await put('blobs', {id, name: b.name, blob, thumb: await makeThumb(blob)});
+      dropURL(id);
+      pframes[pidx].url = await blobURL(id); showFrame();
+      if (editing) updatePhotos();
+      renderGrid();
+      break;
+    }
+    case 'logstamp': {
+      const ta = $('#efrm').elements[args[0]];
+      ta.value = `[${today()}] ` + (ta.value ? '\n' + ta.value : '');
+      ta.focus(); break;
+    }
+    case 'receipt': {
+      let text = null;
+      if (m.receiptId) {
+        const b = await getOne('blobs', m.receiptId);
+        if (b && (b.blob.type.startsWith('text') || /\.(txt|csv|eml|html?)$/i.test(b.name || ''))) text = await b.blob.text();
+      }
+      if (text == null) text = prompt('Paste receipt text to parse (image OCR not supported offline):');
+      if (!text) break;
+      const r = parseReceiptText(text), f = $('#efrm').elements;
+      if (r.total != null && f.price && !f.price.value) f.price.value = r.total;
+      if (r.date && f.acqDate && !f.acqDate.value) f.acqDate.value = r.date;
+      if (r.vendor && f.acqLocation && !f.acqLocation.value) f.acqLocation.value = r.vendor;
+      editing.dirty = true;
+      alert(`Parsed — date: ${r.date || '?'} · total: ${r.total ?? '?'} · vendor: ${r.vendor || '?'}\nEmpty fields filled in; review and Save.`);
+      break;
+    }
+    case 'pdel': { const id = m.photoIds[+args[0]]; await del('blobs', id); dropURL(id); m.photoIds.splice(+args[0], 1); await put('minis', m); updatePhotos(); renderGrid(); break; }
+    case 'pleft': case 'pright': {
+      const i = +args[0], j = act === 'pleft' ? i - 1 : i + 1;
+      if (j < 0 || j >= m.photoIds.length) break;
+      [m.photoIds[i], m.photoIds[j]] = [m.photoIds[j], m.photoIds[i]];
+      await put('minis', m); updatePhotos(); renderGrid(); break;
+    }
+    case 'pname': {
+      const id = m.photoIds[+args[0]], b = await getOne('blobs', id);
+      const n = prompt('Label this angle (front, back, left…):', b?.name || '');
+      if (n != null && b) { b.name = n; await put('blobs', b); updatePhotos(); }
+      break;
+    }
+    case 'cam': $('#photoCam').click(); break;
+    case 'share': shareCard(m); break;
+    case 'postadd': {
+      const url = $('#postUrl').value.trim(); if (!url) break;
+      m.posts = m.posts || [];
+      m.posts.push({url, date:$('#postDate').value, note:$('#postNote').value.trim()});
+      await put('minis', m); $('#postsWrap').innerHTML = postsSecHTML(m); renderGrid(); break;
+    }
+    case 'postdel': { m.posts.splice(+args[0], 1); await put('minis', m); $('#postsWrap').innerHTML = postsSecHTML(m); renderGrid(); break; }
+    case 'spin': { const u = await spinUrls(m); pOwner = m; openPlayer(u.map((url, i) => ({url, cap:`${m.name} — drag to rotate (${i + 1}/${u.length})`}))); break; }
+    case 'webm': { const u = await spinUrls(m); recordFrames([...u, ...u, ...u], 120, m.name + '_spin'); break; }
+    case 'gif': { const u = await spinUrls(m); exportGIF([...u, ...u], 12, m.name + '_spin'); break; }
+    case 'play': { const s = S.shows.find(x => x.id === +args[0]); const f = await showFrames(s); pOwner = null; f.length ? openPlayer(f, s.secs || 2) : alert('No photos on these minis yet.'); break; }
+    case 'expshow': { const s = S.shows.find(x => x.id === +args[0]); const f = await showFrames(s); f.length ? recordFrames(f.map(x => x.url), (s.secs || 2) * 1000, s.name, true) : alert('No photos on these minis yet.'); break; }
+    case 'expgif': { const s = S.shows.find(x => x.id === +args[0]); const f = await showFrames(s); f.length ? exportGIF(f.map(x => x.url), (s.secs || 2) * 100, s.name) : alert('No photos on these minis yet.'); break; }
+    case 'gshow': {
+      const g = S.groups.find(x => x.id === +args[0]);
+      const f = await showFrames({miniIds: g.miniIds, allPhotos: false});
+      pOwner = null;
+      f.length ? openPlayer(f, 2) : alert('No photos on these minis yet.');
+      break;
+    }
+    case 'gcopy': {
+      const g = S.groups.find(x => x.id === +args[0]);
+      const lines = (g.miniIds || []).map(id => S.minis.find(x => x.id === id)).filter(Boolean)
+        .map(x => `${num(x.qty) > 1 ? num(x.qty) + '× ' : ''}${x.name}${x.unit ? ` (${x.unit})` : ''}`);
+      const txt = `${g.name}${g.points ? ` — ${num(g.points)} pts` : ''}${g.game ? ` [${g.game}]` : ''}\n${lines.join('\n')}`;
+      try { await navigator.clipboard.writeText(txt); alert('Army list copied:\n\n' + txt); }
+      catch { prompt('Army list:', txt); }
+      break;
+    }
+    case 'glight': {
+      const frames = await Promise.all(galleryPairs.map(async p => ({url: await blobURL(p.pid), cap: p.m.name})));
+      pOwner = null;
+      openPlayer(frames, 0, +args[0]);
+      break;
+    }
+    case 'buy': {
+      const x = S.minis.find(o => o.id === +args[0]);
+      x.disposition = 'owned'; x.acqDate = x.acqDate || today();
+      await put('minis', x); refresh();
+      break;
+    }
+    case 'saveshow': { const name = prompt('Slideshow name?'); if (name) { await put('shows', {name, secs:2, miniIds:filterMinis().map(x => x.id)}); refresh(); } break; }
+    case 'saveview': {
+      const name = prompt('View name?'); if (!name) break;
+      const v = getViews(); v[name] = flt; localStorage.setItem('mm-views', JSON.stringify(v)); renderBar(); break;
+    }
+    case 'clearflt': flt = {view: flt.view}; render(); break;
+    case 'sortdir': flt.desc = !flt.desc; renderBar(); renderGrid(); break;
+    case 'sortcol': flt.sort === args[0] ? flt.desc = !flt.desc : (flt.sort = args[0], flt.desc = DESC_DEFAULT.has(args[0])); renderBar(); renderGrid(); break;
+    case 'viewmode': setView(flt.view === 'table' ? 'grid' : 'table'); break;
+    case 'csv': exportCSV(); break;
+    case 'csvin': $('#csvFile').click(); break;
+    case 'print': window.print(); break;
+    case 'shoplist': {
+      const list = S.supplies.filter(s => ['low','empty'].includes(s.status))
+        .map(s => `- ${s.name}${s.brand ? ` (${s.brand}${s.range ? ' ' + s.range : ''})` : ''} — ${s.status}`).join('\n');
+      if (!list) { alert('Nothing marked low or empty.'); break; }
+      try { await navigator.clipboard.writeText(list); alert('Shopping list copied:\n\n' + list); }
+      catch { prompt('Shopping list:', list); }
+      break;
+    }
+    case 'selmode': selMode = !selMode; if (!selMode) selSet.clear(); renderBar(); renderGrid(); break;
+    case 'selall': { filterMinis().forEach(x => selSet.add(x.id)); renderBar(); renderGrid(); break; }
+    case 'btag': {
+      const tg = $('#bTag').value.trim(); if (!tg) break;
+      for (const id of selSet) { const x = S.minis.find(o => o.id === id); x.tags = x.tags ? x.tags + ', ' + tg : tg; await put('minis', x); }
+      await refresh(); break;
+    }
+    case 'bfav': { for (const id of selSet) { const x = S.minis.find(o => o.id === id); x.favorite = true; await put('minis', x); } await refresh(); break; }
+    case 'bdel': {
+      if (!confirm(`Permanently delete ${selSet.size} minis (photos included)?`)) break;
+      for (const id of selSet) {
+        const x = S.minis.find(o => o.id === id);
+        for (const b of [...(x.photoIds || []), x.receiptId, x.dispReceiptId].filter(Boolean)) { await del('blobs', b); dropURL(b); }
+        await del('minis', id);
+      }
+      selSet.clear(); await refresh(); break;
+    }
+    case 'spot': {
+      const cands = S.minis.filter(x => !GONE.includes(x.disposition) && x.disposition !== 'wishlist' && !PAINTED.includes(x.stage));
+      if (!cands.length) { alert('Pile of shame is empty — everything is painted! 🎉'); break; }
+      openEditor('minis', cands[Math.floor(Math.random() * cands.length)]); break;
+    }
+    case 'export': exportAll(); break;
+    case 'importbtn': $('#importFile').click(); break;
+    case 'syncdlg': renderSync(); break;
+    case 'syncclose': $('#syncDlg').close(); break;
+    case 'sfpick': try { await SY.folder.connect(); renderSync(); } catch (e) { if (e.name !== 'AbortError') alert(e.message); } break;
+    case 'sfup': try { await cloudUp('folder'); renderSync(); } catch (e) { alert('Folder backup failed: ' + e.message); } break;
+    case 'sfdown': try { await cloudDown('folder'); } catch (e) { alert('Folder restore failed: ' + e.message); } break;
+    case 'sfout': await SY.folder.disconnect(); renderSync(); break;
+    case 'sgconn': try { await SY.drive.connect(driveIdCfg()); renderSync(); } catch (e) { alert(e.message); } break;
+    case 'sgup': try { await cloudUp('drive'); renderSync(); } catch (e) { alert('Drive backup failed: ' + e.message); } break;
+    case 'sgdown': try { await cloudDown('drive'); } catch (e) { alert('Drive restore failed: ' + e.message); } break;
+    case 'sgout': SY.drive.disconnect(); renderSync(); break;
+  }
+});
+async function updatePhotos() {
+  $('#photoSecWrap').innerHTML = photoSecHTML(editing.obj);
+  $('#scanWrap').innerHTML = scanSecHTML(editing.obj);
+  hydrate(dlg);
+}
+document.addEventListener('input', async e => {
+  const id = e.target.id, v = e.target.value;
+  if (id === 'q') { flt.q = v; renderGrid(); }
+  else if (id === 'fGame') { flt.game = v; renderGrid(); }
+  else if (id === 'fStage') { flt.stage = v; renderGrid(); }
+  else if (id === 'fDisp') { flt.disp = v; renderGrid(); }
+  else if (id === 'fTag') { flt.tag = v; renderGrid(); }
+  else if (id === 'fGroup') { flt.group = v; renderGrid(); }
+  else if (id === 'fFav') { flt.fav = e.target.checked; renderGrid(); }
+  else if (id === 'fExh') { flt.exh = e.target.checked; renderGrid(); }
+  else if (id === 'fDue') { flt.due = e.target.checked; renderGrid(); }
+  else if (id === 'sort') { flt.sort = v; flt.desc = DESC_DEFAULT.has(v); renderBar(); renderGrid(); }
+  else if (id === 'views' && v) { flt = {...getViews()[v], view: flt.view}; render(); }
+  else if (['sRes','sThresh','sTol','sArc','sElev','sSmooth','sRev'].includes(id)) scanPreview();
+  else if (id === 'bStage' && v) { for (const i of selSet) { const x = S.minis.find(o => o.id === i); x.stage = v; if (PAINTED.includes(v) && !x.paintedDate) x.paintedDate = today(); await put('minis', x); } await refresh(); }
+  else if (id === 'bGroup' && v) {
+    const g = S.groups.find(x => x.id === +v);
+    g.miniIds = [...new Set([...(g.miniIds || []), ...selSet])];
+    await put('groups', g); await refresh();
+  }
+  else if (id === 'photoAdd' || id === 'photoCam') addPhotos(e.target.files);
+  else if (id === 'importFile') importAll(e.target.files[0]);
+  else if (id === 'csvFile') importCSV(e.target.files[0]);
+  else if (id === 'autoBk') localStorage.setItem('mm-autobk', e.target.checked ? '1' : '0');
+  else if (id === 'driveId') localStorage.setItem('mm-driveid', v.trim());
+});
+async function addPhotos(files) {
+  if (!files?.length) return;
+  const m = editing.obj; m.photoIds = m.photoIds || [];
+  for (const f of files) m.photoIds.push(await putPhoto(f));
+  await put('minis', m); await refresh(); updatePhotos();
+}
+// drag-drop: photos onto the editor, cards between queue columns
+document.addEventListener('dragover', e => {
+  if (e.target.closest('#photoSecWrap') || e.target.closest('[data-stage]')) { e.preventDefault(); e.target.closest('[data-stage]')?.classList.add('over'); }
+});
+document.addEventListener('dragleave', e => e.target.closest('[data-stage]')?.classList.remove('over'));
+document.addEventListener('drop', async e => {
+  if (e.target.closest('#photoSecWrap')) { e.preventDefault(); addPhotos(e.dataTransfer.files); return; }
+  const col = e.target.closest('[data-stage]'); if (!col) return;
+  e.preventDefault(); col.classList.remove('over');
+  const x = S.minis.find(o => o.id === +e.dataTransfer.getData('text/plain'));
+  if (x) {
+    x.stage = col.dataset.stage;
+    if (PAINTED.includes(x.stage) && !x.paintedDate) x.paintedDate = today();
+    await put('minis', x); refresh();
+  }
+});
+document.addEventListener('dragstart', e => { const c = e.target.closest?.('[data-drag]'); if (c) e.dataTransfer.setData('text/plain', c.dataset.drag); });
+// keyboard
+document.addEventListener('keydown', async e => {
+  if (e.target.id === 'quick' && e.key === 'Enter') {
+    const name = e.target.value.trim(); if (!name) return;
+    await put('minis', {name, stage: 'Unassembled', disposition: 'owned', qty: 1});
+    e.target.value = ''; await refresh(); $('#quick')?.focus();
+    return;
+  }
+  if (player.open) {
+    if (e.key === 'ArrowRight') { pidx = (pidx + 1) % pframes.length; showFrame(); }
+    if (e.key === 'ArrowLeft') { pidx = (pidx - 1 + pframes.length) % pframes.length; showFrame(); }
+    return;
+  }
+  if (e.key === 'Enter' && e.target.classList?.contains('card')) { e.target.click(); return; }
+  if (dlg.open || $('#scanDlg').open || $('#glDlg').open || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === '/') { e.preventDefault(); $('#q')?.focus(); }
+  else if (e.key === 'n' && LABEL[tab]) openEditor(tab, {});
+  else if (e.key === 'g' && tab === 'minis') setView(flt.view === 'table' ? 'grid' : 'table');
+  else if (e.key === '?') $('#help').showModal();
+});
+window.addEventListener('beforeunload', e => { if (editing?.dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+// self-check
+(() => {
+  const t = {name:'Test Knight', game:'gameA', favorite:true, stage:'Primed', tags:'elite, hero', posts:[{url:'x'}], painters:'Adam'};
+  console.assert(matches(t, {q:'knight'}) && !matches(t, {q:'zzz'}) && matches(t, {game:'gameA', fav:1}) && !matches(t, {stage:'Painted'}) && matches(t, {tag:'hero'}) && matches(t, {exh:1}), 'self-check FAILED: matches()');
+  console.assert(matchQuery(t, 'game:gameA') && !matchQuery(t, 'game:gameB') && matchQuery(t, 'painter:adam knight') && !matchQuery(t, 'stage:painted'), 'self-check FAILED: matchQuery()');
+  console.assert(safeUrl('https://a.b/c') === 'https://a.b/c' && !safeUrl('javascript:alert(1)') && !safeUrl('data:text/html,x') && !safeUrl(''), 'self-check FAILED: safeUrl()');
+  console.assert(stars(99) === '★★★★★' && stars(-3) === '' && stars('2') === '★★' && stars('evil') === '', 'self-check FAILED: stars()');
+  const sn = sanitize({id:'7', qty:'3', photoIds:['1','x','2'], posts:[{url:'u'}, null, 'junk']});
+  console.assert(sn.id === 7 && sn.qty === 3 && sn.photoIds.join() === '1,2' && sn.posts.length === 1, 'self-check FAILED: sanitize()');
+  console.assert(parseMins('6h 30m') === 390 && parseMins('45m') === 45 && parseMins('2') === 120, 'self-check FAILED: parseMins()');
+  const r = parseReceiptText('Goblin Games\n2024-05-04\nItem 12.99\nTOTAL 25.98');
+  console.assert(r.total === 25.98 && r.date === '2024-05-04' && /Goblin/.test(r.vendor), 'self-check FAILED: receipt parse');
+  const csv = parseCSV('name,game\n"Bob, the Bold",gameA\n"He said ""hi""",gameB\n');
+  console.assert(csv.length === 3 && csv[1][0] === 'Bob, the Bold' && csv[2][0] === 'He said "hi"', 'self-check FAILED: parseCSV()');
+  const rows = csvToMinis('name,game,price,favorite\nPawn,gameA,4.50,yes\n');
+  console.assert(rows.length === 1 && rows[0].price === 4.5 && rows[0].favorite === true && rows[0].stage === 'Unassembled', 'self-check FAILED: csvToMinis()');
+  console.assert(toIdx(255,255,255) === 255 && toIdx(0,0,0) === 216 && toIdx(255,0,0) === 180, 'self-check FAILED: toIdx()');
+  const sb = new ArrayBuffer(134); const dv = new DataView(sb); dv.setUint32(80, 1, true);
+  [0,0,0, 1,0,0, 0,1,0].forEach((v, i) => dv.setFloat32(96 + i * 4, v, true));
+  const ptris = R3.parseSTL(sb);
+  console.assert(ptris.pos.length === 9 && ptris.pos[3] === 1, 'self-check FAILED: parseSTL()');
+  console.assert(makeGIF([new Uint8Array(4)], 2, 2, 10).size > 780, 'self-check FAILED: makeGIF()');
+  R3.selfTest().forEach(f => console.assert(false, 'recon3d self-check FAILED: ' + f));
+})();
+
+// init
+const qp = new URLSearchParams(location.search);
+if (qp.get('tab') && TABS[qp.get('tab')]) tab = qp.get('tab');
+flt.view = localStorage.getItem('mm-view') || 'grid';
+await refresh();
+if (qp.get('new') === 'mini') openEditor('minis', {});
+navigator.storage?.persist?.().catch(() => {});     // ask to survive storage pressure
+if (location.protocol.startsWith('http') && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// daily silent cloud backup — reuses an existing Drive grant, never opens a popup on boot
+if (localStorage.getItem('mm-autobk') === '1') setTimeout(async () => {
+  if (Date.now() - (+localStorage.getItem('mm-lastCloudBk') || 0) < 864e5) return;
+  try {
+    const conn = await SY.drive.connect(driveIdCfg(), {silent: true});
+    await SY.drive.upload(conn, SY.BACKUP_NAME, await buildBackupBlob());
+    localStorage.setItem('mm-lastCloudBk', String(Date.now()));
+    backupDone();
+    toast('Daily cloud backup saved ✔');
+  } catch { /* no session — next manual sign-in re-arms it */ }
+}, 4000);
+</script>
+</body>
+</html>
