@@ -1,5 +1,5 @@
 // ponytail: network-first, cache fallback — always fresh online, still works offline
-const C = 'mm-v7';
+const C = 'mm-v8';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(C).then(c => c.addAll(['.', 'index.html', 'recon3d.js', 'sync.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'])));
   self.skipWaiting();

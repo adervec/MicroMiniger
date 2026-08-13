@@ -1798,6 +1798,15 @@ await refresh();
 if (qp.get('new') === 'mini') openEditor('minis', {});
 navigator.storage?.persist?.().catch(() => {});     // ask to survive storage pressure
 if (location.protocol.startsWith('http') && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// tell the app portal (same-origin localStorage) this app is installed — only when actually running installed
+try {
+  const dm = ['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay'];
+  if (navigator.standalone || dm.some(m => matchMedia(`(display-mode: ${m})`).matches)) {
+    const k = 'portal-installed', reg = JSON.parse(localStorage.getItem(k) || '{}');
+    reg['MicroMiniger'] = Date.now();
+    localStorage.setItem(k, JSON.stringify(reg));
+  }
+} catch { /* private mode / bad JSON — nothing to report */ }
 // daily silent cloud backup — reuses an existing Drive grant, never opens a popup on boot
 if (localStorage.getItem('mm-autobk') === '1') setTimeout(async () => {
   if (Date.now() - (+localStorage.getItem('mm-lastCloudBk') || 0) < 864e5) return;
