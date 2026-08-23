@@ -197,6 +197,10 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
   Keys: name, game, faction, unit, tag, stage, status, painter, owner, scale, material, paint, kit, note.</p>
   <p class=sub>Photos: drag files onto the photo box. Order them around the mini to get the 360° spin, GIF and photo scan.
   Drag cards between columns in Paint Queue to change stage. Battle Log tracks games per army; Gallery is the photo wall.</p>
+  <h3>Coach · AI cowork sync</h3>
+  <p class=sub>Hand your collection and paint queue to an agent through a folder — CoworkSyncHub, Claude Desktop, or a person — and its reply shows here. Nothing is uploaded.</p>
+  <div id="coachHost"></div>
+  <pre id="coachReply" class=sub hidden style="white-space:pre-wrap"></pre>
   <p class=sub>More apps by this maker — <a href="https://adervec.github.io" target="_blank" rel="noopener">adervec.github.io</a></p>
   <p class=sub>MicroMiniger is a fan-made hobby tool. It is not affiliated with, sponsored, or endorsed by any game publisher or paint manufacturer; all trademarks belong to their respective owners. Your data stays in this browser unless you connect the optional ☁ cloud backup — either way, back it up!</p>
   <footer><button data-act="helpclose">Close</button></footer>
@@ -351,6 +355,66 @@ const getAll = s => rq(db.transaction(s).objectStore(s).getAll());
 const getOne = (s, id) => rq(db.transaction(s).objectStore(s).get(id));
 
 const S = {};
+
+// Folder cowork through the maker's shared panel (https://adervec.github.io/cowork.js, fs mode):
+// the panel drives a folder you pick; we hand it the collection + paint queue as coach/request.json
+// and show whatever an agent writes to coach/reply.json.
+function loadCowork() {
+  if (window.cowork) return Promise.resolve(window.cowork);
+  const head = document.head || document.documentElement;
+  if (!head || typeof head.appendChild !== "function") return Promise.resolve(null);
+  return new Promise((res) => {
+    try {
+      const s = document.createElement("script"); s.src = "https://adervec.github.io/cowork.js"; s.async = true;
+      s.onload = () => res(window.cowork || null); s.onerror = () => res(null);
+      head.appendChild(s);
+    } catch { res(null); }
+  });
+}
+function coworkHash(text) { let h = 5381; for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0; return h.toString(16); }
+function coworkManifest(app) {
+  return { protocol: "cowork-manifest", protocolVersion: 1, app,
+    channels: [{ name: "coach", request: ["coach/request.json"], instructions: "coach/INSTRUCTIONS.md", replyPath: "coach/reply.json" }] };
+}
+function coworkEnvelope(protocol, payload) {
+  return { protocol, protocolVersion: 1, kind: "coach-request", generatedAt: new Date().toISOString(),
+    requestHash: coworkHash(JSON.stringify(payload)), payload };
+}
+function coworkReplyText(reply) {
+  return typeof reply === "string" ? reply : (reply && (reply.reply || (reply.payload && reply.payload.reply))) || JSON.stringify(reply, null, 2);
+}
+const COACH_INSTRUCTIONS = `# MicroMiniger — coach channel
+
+Read \`coach/request.json\`: \`payload.minis\` is the collection (name, game, faction, unit, stage, status,
+time painted, rating, points) and \`payload.byStage\` counts the paint queue. Write \`coach/reply.json\`:
+
+\`\`\`json
+{ "requestHash": "<copy the request's requestHash verbatim>",
+  "reply": "<a short hobby plan in markdown: what to paint next and why (finish what is nearly done first), a realistic week, one thing the collection shows they do well. Encouraging, specific, no pressure.>" }
+\`\`\`
+`;
+let coachMounted = false;
+function mountCoach() {
+  const host = $('#coachHost'), out = $('#coachReply');
+  if (!host || coachMounted) return;
+  coachMounted = true;
+  const show = text => { out.textContent = text; out.hidden = !text; };
+  try { show(localStorage.getItem('mm-coach-reply') || ''); } catch { /* private mode */ }
+  loadCowork().then(cw => {
+    if (!cw || host.childElementCount) return;
+    cw.mount(host, {
+      app: 'microminiger', manifest: coworkManifest('microminiger'),
+      files: () => {
+        const minis = (S.minis || []).slice(0, 80).map(m => ({ name: m.name, game: m.game, faction: m.faction, unit: m.unit, stage: m.stage,
+          status: m.status, timeToPaint: m.timeToPaint, rating: m.rOverall, points: m.points }));
+        const byStage = {}; (S.minis || []).forEach(m => { const k = m.stage || 'unstaged'; byStage[k] = (byStage[k] || 0) + 1; });
+        return { 'coach/request.json': coworkEnvelope('microminiger-coach', { minis, byStage, total: (S.minis || []).length }),
+          'coach/INSTRUCTIONS.md': COACH_INSTRUCTIONS };
+      },
+      apply: (_ch, reply) => { const text = coworkReplyText(reply); try { localStorage.setItem('mm-coach-reply', text); } catch { /* quota */ } show(text); },
+    });
+  });
+}
 async function refresh() {
   for (const s of STORES) if (s !== 'blobs') S[s] = await getAll(s); // ponytail: blobs fetched lazily, not held in RAM
   render();
@@ -1457,7 +1521,7 @@ document.addEventListener('click', async e => {
     case 'close': closeEditor(); break;
     case 'pclose': player.close(); break;
     case 'helpclose': $('#help').close(); break;
-    case 'help': $('#help').showModal(); break;
+    case 'help': mountCoach(); $('#help').showModal(); break;
     case 'glclose': $('#glDlg').close(); break;
     case 'glflip': if (viewer) { viewer.upFlip = !viewer.upFlip; viewer.sort?.(); viewer.draw(); } break;
     case 'glwebm': { const u = await orbitFrames(viewer, 48); recordFrames(u, 60, $('#glName').textContent); break; }
@@ -1762,7 +1826,7 @@ document.addEventListener('keydown', async e => {
   if (e.key === '/') { e.preventDefault(); $('#q')?.focus(); }
   else if (e.key === 'n' && LABEL[tab]) openEditor(tab, {});
   else if (e.key === 'g' && tab === 'minis') setView(flt.view === 'table' ? 'grid' : 'table');
-  else if (e.key === '?') $('#help').showModal();
+  else if (e.key === '?') { mountCoach(); $('#help').showModal(); }
 });
 window.addEventListener('beforeunload', e => { if (editing?.dirty) { e.preventDefault(); e.returnValue = ''; } });
 
