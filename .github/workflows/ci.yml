@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # ponytail: no package.json — install the one dependency for this step only
+      - run: npm i --no-save playwright-core@1.62.0
+      - run: node --check sw.js
+      - run: node .github/smoke.mjs
