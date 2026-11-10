@@ -220,7 +220,8 @@ const esc = s => (s ?? '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<'
 const downloadBlob = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
 const loadImgs = urls => Promise.all(urls.map(u => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = u; })));
 const safeName = s => (s || 'export').replace(/\W+/g, '_');
-const today = () => new Date().toISOString().slice(0, 10);
+// the LOCAL calendar day (toISOString is UTC, so after 21:00 at UTC-3 it would already be tomorrow)
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const num = v => Number.isFinite(+v) ? +v : 0;
 const stars = n => '★'.repeat(Math.max(0, Math.min(5, num(n))));
 const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';    // no javascript:/data: from imported records
