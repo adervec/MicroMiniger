@@ -162,6 +162,7 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
     <button data-act="syncdlg" title="Cloud backup">☁</button>
     <button data-act="export">Backup</button>
     <button data-act="importbtn">Restore</button>
+    <button data-act="eraseall" title="Erase everything stored on this device">Erase</button>
     <input type="file" id="importFile" accept=".json" hidden>
     <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
   </div>
@@ -1745,6 +1746,14 @@ document.addEventListener('click', async e => {
     }
     case 'export': exportAll(); break;
     case 'importbtn': $('#importFile').click(); break;
+    // Only this app's own keys: every app by this maker shares one origin, so never localStorage.clear().
+    case 'eraseall':
+      if (confirm('Erase every mini, photo and setting stored on this device?\n\nA cloud backup in Google Drive is not touched. Take a Backup first if you are not sure.')) {
+        Object.keys(localStorage).filter(k => k.startsWith('mm-')).forEach(k => localStorage.removeItem(k));
+        const del = indexedDB.deleteDatabase('microminiger');
+        del.onsuccess = del.onerror = del.onblocked = () => location.reload();
+      }
+      break;
     case 'syncdlg': renderSync(); break;
     case 'syncclose': $('#syncDlg').close(); break;
     case 'sfpick': try { await SY.folder.connect(); renderSync(); } catch (e) { if (e.name !== 'AbortError') alert(e.message); } break;

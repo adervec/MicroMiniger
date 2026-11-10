@@ -20,10 +20,16 @@ const browser = await chromium.launch({ channel: 'chrome' });
 const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
+// house standard: no third-party requests. Fonts and scripts come from the maker's own site;
+// Google sign-in for Drive sync is the one allowed outside party.
+const OWN = /^(localhost(:\d+)?|adervec\.github\.io|accounts\.google\.com|apis\.google\.com|www\.googleapis\.com|[a-z0-9-]+\.googleusercontent\.com)$/;
+const outside = new Set();
+page.on('request', (r) => { const u = new URL(r.url()); if (/^https?:$/.test(u.protocol) && !OWN.test(u.host)) outside.add(u.host); });
 // SMOKE_HASH picks the screen that carries the font picker, e.g. '#/progress'
 await page.goto(`http://localhost:${server.address().port}/${process.env.SMOKE_HASH || ''}`, { waitUntil: 'load', timeout: 120000 });
 await page.waitForTimeout(3000); // let startup code run
 const text = (await page.innerText('body')).trim();
+if (outside.size) errors.push('third-party requests to: ' + [...outside].join(', '));
 // house standard: Atkinson Hyperlegible is the default font (https://adervec.github.io/font.js)
 const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
 if (!/Atkinson Hyperlegible/.test(font)) errors.push(`default font is "${font}", expected Atkinson Hyperlegible`);
