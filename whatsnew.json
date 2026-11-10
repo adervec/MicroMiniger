@@ -1,0 +1,13 @@
+[
+ {
+  "date": "2026-11-10",
+  "items": [
+   "A new default font, Atkinson Hyperlegible, chosen for easy reading. Change it in Settings; the choice applies to every app by this maker on this device.",
+   "About this app (under the font choice) shows the version, where your data lives, how much storage it uses, and a Copy diagnostics button for reporting a problem.",
+   "You are told when a new version is ready, and if something goes wrong you see a message with a Reload button instead of a frozen screen.",
+   "The app now starts in a light or dark theme to match your device, until you pick one yourself.",
+   "Erase (next to Backup and Restore) removes every mini, photo and setting from this device in one step, after asking. Your Drive backup is not touched.",
+   "Dates such as 'painted on' now use your local day, so something done late in the evening no longer lands on tomorrow."
+  ]
+ }
+]
