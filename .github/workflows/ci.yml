@@ -1,9 +1,15 @@
-name: CI
+name: Test and deploy
 
 on:
   push:
   pull_request:
   workflow_dispatch:
+
+# House standard: nothing reaches the live site unless the checks passed.
+# (Repo Settings -> Pages -> Source is "GitHub Actions".)
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -17,3 +23,23 @@ jobs:
       - run: npm i --no-save playwright-core@1.62.0
       - run: node --check sw.js
       - run: node .github/smoke.mjs
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # a fresh checkout, so nothing the test job installed is published
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
