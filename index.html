@@ -264,7 +264,8 @@ const THEMES = {
   paper:     {label:'Paper (light)',    sw:['#2e6db4','#c0612f'], light:1, v:['#f3efe7','#ece6da','#fffdf9','#f6f1e8','#dcd4c4','#1f2937','#6b7280','#2e6db4','#c0612f','#15803d','#b45309','#b91c1c']},
   mono:      {label:'Mono Slate (light)',sw:['#111827','#6366f1'], light:1, v:['#eef1f5','#e3e8ef','#ffffff','#f1f4f9','#d3dae4','#0f172a','#64748b','#4f46e5','#0ea5e9','#059669','#d97706','#dc2626']},
 };
-let curTheme = localStorage.getItem('mm-theme') || 'aurora';
+// House standard: with no saved choice, start from the device's light/dark setting; a saved choice always wins.
+let curTheme = localStorage.getItem('mm-theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'aurora');
 if (curTheme === 'dark') curTheme = 'midnight';   // migrate the old two-theme setting
 if (curTheme === 'light') curTheme = 'paper';
 function applyTheme(key) {
