@@ -2,17 +2,19 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://adervec.github.io; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.googleusercontent.com; connect-src 'self' https://www.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src https://accounts.google.com; manifest-src 'self'; worker-src 'self'; media-src blob:; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://adervec.github.io; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.googleusercontent.com; connect-src 'self' https://www.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src https://accounts.google.com; font-src https://adervec.github.io; manifest-src 'self'; worker-src 'self'; media-src blob:; form-action 'none'; base-uri 'none'; object-src 'none'">
 <title>MicroMiniger</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#1b1e24">
+<!-- house font: Atkinson Hyperlegible by default, reader-changeable under Settings -->
+<script src="https://adervec.github.io/font.js"></script>
 <style>
 :root{color-scheme:dark;
 --bg:#0e1018;--panel:#151826;--card:#1a1e30;--surface2:#222740;--border:#2c3350;--ink:#e8eaf2;--mut:#9aa3c0;--faint:#6b7390;
 --field:#151826;--accent:#7c6cff;--accent2:#2b2a4a;--gold:#fbbf24;--link:#22d3ee;--danger:#fb7185;--warn:#fbbf24;--good:#34d399}
-body{font:14px/1.4 system-ui;margin:0;background:var(--bg);color:var(--ink)}
+body{font:14px/1.4 var(--app-font,system-ui);margin:0;background:var(--bg);color:var(--ink)}
 #shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
 #side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--panel);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:4px;box-sizing:border-box}
 .brand{display:flex;align-items:center;gap:11px;padding:2px 8px 16px}
@@ -197,6 +199,8 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
   Keys: name, game, faction, unit, tag, stage, status, painter, owner, scale, material, paint, kit, note.</p>
   <p class=sub>Photos: drag files onto the photo box. Order them around the mini to get the 360° spin, GIF and photo scan.
   Drag cards between columns in Paint Queue to change stage. Battle Log tracks games per army; Gallery is the photo wall.</p>
+  <h3>Font</h3>
+  <p class=sub><app-font-picker></app-font-picker> Applies to every app by this maker on this device.</p>
   <h3>Coach · AI cowork sync</h3>
   <p class=sub>Hand your collection and paint queue to an agent through a folder — CoworkSyncHub, Claude Desktop, or a person — and its reply shows here. Nothing is uploaded.</p>
   <div id="coachHost"></div>

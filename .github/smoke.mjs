@@ -23,6 +23,10 @@ page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`http://localhost:${server.address().port}/`, { waitUntil: 'load', timeout: 120000 });
 await page.waitForTimeout(3000); // let startup code run
 const text = (await page.innerText('body')).trim();
+// house standard: Atkinson Hyperlegible is the default font (https://adervec.github.io/font.js)
+const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+if (!/Atkinson Hyperlegible/.test(font)) errors.push(`default font is "${font}", expected Atkinson Hyperlegible`);
+if (!(await page.locator('app-font-picker select').count())) errors.push('no <app-font-picker> on the page');
 await browser.close();
 server.close();
 
@@ -30,4 +34,4 @@ if (errors.length || text.length < 50) {
   console.log(errors.length ? 'page errors:\n  ' + errors.join('\n  ') : `page rendered almost nothing (${text.length} chars)`);
   process.exit(1);
 }
-console.log(`smoke ok: no page errors, ${text.length} chars rendered`);
+console.log(`smoke ok: no page errors, ${text.length} chars rendered, font ${font.split(',')[0]}`);
