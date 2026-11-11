@@ -7,7 +7,8 @@
    "You are told when a new version is ready, and if something goes wrong you see a message with a Reload button instead of a frozen screen.",
    "The app now starts in a light or dark theme to match your device, until you pick one yourself.",
    "Erase (next to Backup and Restore) removes every mini, photo and setting from this device in one step, after asking. Your Drive backup is not touched.",
-   "Dates such as 'painted on' now use your local day, so something done late in the evening no longer lands on tomorrow."
+   "Dates such as 'painted on' now use your local day, so something done late in the evening no longer lands on tomorrow.",
+   "AI cowork sync now reviews the paint coach's plan before it replaces yours, can run on a schedule from one computer, keeps a history, and can undo."
   ]
  }
 ]

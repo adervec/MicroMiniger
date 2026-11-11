@@ -420,6 +420,28 @@ function mountCoach() {
           'coach/INSTRUCTIONS.md': COACH_INSTRUCTIONS };
       },
       apply: (_ch, reply) => { const text = coworkReplyText(reply); try { localStorage.setItem('mm-coach-reply', text); } catch { /* quota */ } show(text); },
+      // cowork v2 (house standard): review the plan before it replaces the current one, undo it from the history
+      channels: {
+        coach: {
+          label: 'Paint coach',
+          preview: reply => [{ id: 'plan', label: 'Show this plan in MicroMiniger (replaces the current one)', detail: coworkReplyText(reply).slice(0, 400) }],
+          apply: reply => {
+            let prev = ''; try { prev = localStorage.getItem('mm-coach-reply') || ''; } catch { /* private mode */ }
+            const text = coworkReplyText(reply);
+            try { localStorage.setItem('mm-coach-reply', text); } catch { /* quota */ }
+            show(text);
+            return { summary: 'new paint plan shown', undo: { prev } };
+          },
+          undo: data => { try { localStorage.setItem('mm-coach-reply', data.prev || ''); } catch { /* quota */ } show(data.prev || ''); },
+        },
+      },
+      // the morning brief an agent can read without being asked anything
+      brief: () => {
+        const by = {}; (S.minis || []).forEach(m => { const k = m.stage || 'unstaged'; by[k] = (by[k] || 0) + 1; });
+        const lines = Object.entries(by).sort((x, y) => y[1] - x[1]).map(([k, n]) => `- ${k}: ${n}`);
+        return { markdown: `# MicroMiniger brief\n\n${(S.minis || []).length} minis in the collection.\n\n## Paint queue by stage\n\n${lines.join('\n') || '- (empty)'}\n`,
+          data: { app: 'microminiger', generatedAt: new Date().toISOString(), total: (S.minis || []).length, byStage: by } };
+      },
     });
   });
 }
