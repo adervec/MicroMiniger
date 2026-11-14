@@ -89,6 +89,7 @@ async function fetchProfile(token) {
     if (r.ok) {
       const j = await r.json();
       _profile = {name: j.name || j.email || 'Google account', picture: j.picture || '', email: j.email || ''};
+      window.appFont?.setAccount(_profile); // house standard: the picture sits in the top bar while synced
     }
   } catch { /* cosmetic only */ }
 }
@@ -131,7 +132,7 @@ export const drive = {
     await fetchProfile(token);
     return {token};
   },
-  disconnect() { _token = null; _profile = null; },
+  disconnect() { _token = null; _profile = null; window.appFont?.setAccount(null); },
   async stat(conn, name) { return (await find(conn.token, name))?.modifiedTime || null; },
   async upload(conn, name, blob) {
     const existing = (await find(conn.token, name))?.id || null;

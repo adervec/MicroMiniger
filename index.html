@@ -157,6 +157,7 @@ kbd{background:var(--field);border:1px solid var(--border);border-radius:4px;pad
     <button class="hamburger" data-act="menu" aria-label="Menu">☰</button>
     <span id="status"></span>
     <span class="spacer"></span>
+    <app-account title="Google Drive sync"></app-account>
     <button data-act="help" title="Keyboard shortcuts (?)">?</button>
     <button data-act="themes" title="Theme">🎨</button>
     <button data-act="currency" title="Currency symbol">⚙</button>
@@ -1780,6 +1781,7 @@ document.addEventListener('click', async e => {
       }
       break;
     case 'syncdlg': renderSync(); break;
+    // the corner avatar opens the sync dialog (fired by font.js's <app-account>)
     case 'syncclose': $('#syncDlg').close(); break;
     case 'sfpick': try { await SY.folder.connect(); renderSync(); } catch (e) { if (e.name !== 'AbortError') alert(e.message); } break;
     case 'sfup': try { await cloudUp('folder'); renderSync(); } catch (e) { alert('Folder backup failed: ' + e.message); } break;
@@ -1921,6 +1923,7 @@ if (localStorage.getItem('mm-autobk') === '1') setTimeout(async () => {
     toast('Daily cloud backup saved ✔');
   } catch { /* no session — next manual sign-in re-arms it */ }
 }, 4000);
+document.addEventListener('app-account-click', () => renderSync());
 </script>
 </body>
 </html>
